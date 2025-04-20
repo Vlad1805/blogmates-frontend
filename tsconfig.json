@@ -6,9 +6,9 @@
   ],
   "compilerOptions": {
     "types": ["node"],
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
-      "@/components/*": ["src/components/*"]
+      "@/*": ["./src/*"]
     }
   }
 }
