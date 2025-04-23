@@ -1,23 +1,10 @@
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { logoutUser } from "@/api/blogmates-backend";
-
+import UserProfileIcon from "./UserProfileIcon";
 export default function Navbar() {
   const navigate = useNavigate();
-  const { isAuthenticated, setAuthStatus } = useAuth();
-
-  // Handle Logout
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-      document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      setAuthStatus(false); // Update global state
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
+  const { isAuthenticated } = useAuth();
 
   return (
     <AppBar position="fixed" color="primary">
@@ -31,6 +18,11 @@ export default function Navbar() {
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2 }}>
+          {isAuthenticated && (
+            <Button color="inherit" onClick={() => navigate("/create")}>
+              Create
+            </Button>
+          )}
           <Button color="inherit" onClick={() => navigate("/")}>
             Home
           </Button>
@@ -39,9 +31,7 @@ export default function Navbar() {
           </Button>
 
           {isAuthenticated ? (
-            <Button color="inherit" onClick={handleLogout}>
-              Log Out
-            </Button>
+            <UserProfileIcon />
           ) : (
             <>
               <Button color="inherit" onClick={() => navigate("/login")}>

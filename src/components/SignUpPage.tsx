@@ -19,7 +19,7 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      const data = await signUpApi(username, email, password, password2);
+      const data = await signUpApi({ username, email, password, password2 });
       setSuccessMessage(data.message);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to sign up");

@@ -3,5 +3,7 @@ export const ENDPOINTS = {
   SIGN_UP: "/signup/",
   LOGIN: "/token/",
   LOGOUT: "/logout/",
-  REFRESH_TOKEN: "/auth/token/refresh/",
+  REFRESH_TOKEN: "/token/refresh/",
+  USER_DATA: "/user/",
+  USER_PROFILE: "/profile/",
 }; 

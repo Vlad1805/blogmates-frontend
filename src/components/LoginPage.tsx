@@ -15,13 +15,8 @@ export default function LoginPage() {
     setError("");
     setSuccess(false);
     try {
-      const response = await loginUser({ username, password });
+      await loginUser({ username, password });
       setAuthStatus(true);
-
-      // Save tokens in localStorage (or sessionStorage)
-      localStorage.setItem("accessToken", response.access);
-      localStorage.setItem("refreshToken", response.refresh);
-
       setSuccess(true);
     } catch (err) {
       setError("Login failed. Please check your credentials.");
