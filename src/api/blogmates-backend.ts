@@ -37,10 +37,11 @@ export interface UserDataResponse {
   email: string;
   first_name: string;
   last_name: string;
-  followers_count: number;
+  follower_count: number;
   following_count: number;
   profile_picture: string;  // base64 encoded image data
   profile_picture_content_type: string;  // MIME type of the image
+  friendship_status: string;
 }
 
 interface UpdateProfileRequest {
@@ -51,6 +52,17 @@ interface UpdateProfileRequest {
   profile_picture_content_type?: string;       // MIME type of the image
 }
 
+export interface PendingRequest {
+  id: number;
+  sender_id: number;
+  sender_name: string;
+  created_at: string;
+}
+
+export interface FollowData {
+  id: number;
+  username: string;
+}
 // 🔹 API Client with default settings
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -141,6 +153,19 @@ export async function getUserProfile(username: string): Promise<UserDataResponse
   }
 }
 
+// ✨ **Get User Profile API by ID**
+export async function getUserProfileById(id: number): Promise<UserDataResponse> {
+  try {
+    const response = await apiClient.get<UserDataResponse>(ENDPOINTS.USER_PROFILE, {
+      params: { user_id: id }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Get user profile by ID failed:", error);
+    throw new Error("Error getting user profile by ID");
+  }
+}
+
 // ✨ **Update User Profile API**
 export async function updateUserProfile(data: UpdateProfileRequest): Promise<UserDataResponse> {
   try {
@@ -159,5 +184,88 @@ export async function refreshToken(): Promise<void> {
   } catch (error) {
     console.error("Token refresh failed:", error);
     throw error;
+  }
+}
+
+// ✨ **Send follow request API**
+export async function sendFollowRequest(id: number): Promise<void> {
+  try {
+    await apiClient.post(ENDPOINTS.SEND_FOLLOW_REQUEST, {
+      receiver_id: id
+    });
+  } catch (error) {
+    console.error("Send friend request failed:", error);
+    throw new Error("Error sending friend request");
+  }
+}
+
+// ✨ **Get pending friend requests API**
+export async function getPendingFriendRequests(): Promise<PendingRequest[]> {
+  try {
+    const response = await apiClient.get<PendingRequest[]>(ENDPOINTS.PENDING_FOLLOW_REQUESTS);
+    return response.data;
+  } catch (error) {
+    console.error("Get pending friend requests failed:", error);
+    throw new Error("Error getting pending friend requests");
+  }
+}
+
+// ✨ **Get pending sent friend requests API**
+export async function getPendingSentFriendRequests(): Promise<PendingRequest[]> {
+  try {
+    const response = await apiClient.get<PendingRequest[]>(ENDPOINTS.PENDING_SENT_FOLLOW_REQUESTS);
+    return response.data;
+  } catch (error) {
+    console.error("Get pending sent friend requests failed:", error);
+    throw new Error("Error getting pending sent friend requests");
+  }
+}
+
+// ✨ **Accept follow request API**
+export async function acceptFollowRequest(id: number): Promise<void> {
+  try {
+    await apiClient.post(ENDPOINTS.ACCEPT_FOLLOW_REQUEST + id + "/");
+  } catch (error) {
+    console.error("Accept follow request failed:", error);
+    throw new Error("Error accepting follow request");
+  }
+}
+
+// ✨ **Decline follow request API**
+export async function declineFollowRequest(id: number): Promise<void> {
+  try {
+    await apiClient.delete(ENDPOINTS.REMOVE_FOLLOW_REQUEST + id + "/");
+  } catch (error) {
+    console.error("Decline follow request failed:", error);
+    throw new Error("Error declining follow request");
+  }
+}
+
+// Unfollow user API
+export async function unfollowUser(id: number): Promise<void> {
+  try {
+    await apiClient.delete(ENDPOINTS.UNFOLLOW_USER + id + "/");
+  } catch (error) {
+    console.error("Unfollow user failed:", error);
+    throw new Error("Error unfollowing user");
+  }
+}
+export async function getFollowers(): Promise<FollowData[]> {
+  try {
+    const response = await apiClient.get<FollowData[]>(ENDPOINTS.FOLLOWERS);
+    return response.data;
+  } catch (error) {
+    console.error("Get followers failed:", error);
+    throw new Error("Error getting followers");
+  }
+}
+
+export async function getFollowing(): Promise<FollowData[]> {
+  try {
+    const response = await apiClient.get<FollowData[]>(ENDPOINTS.FOLLOWING);
+    return response.data;
+  } catch (error) {
+    console.error("Get following failed:", error);
+    throw new Error("Error getting following");
   }
 }

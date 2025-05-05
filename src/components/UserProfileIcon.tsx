@@ -27,7 +27,6 @@ export default function UserProfileIcon() {
       console.error("Logout failed", error);
     }
   };
-  console.log(userData?.profile_picture);
   return (
     <>
       <IconButton onClick={handleClick}>

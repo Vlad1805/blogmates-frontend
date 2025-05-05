@@ -8,6 +8,8 @@ import theme from "./theme";
 import { AuthProvider } from "./context/AuthContext";
 import ProfilePage from "@/components/ProfilePage";
 import CreatePostPage from "@/components/CreatePostPage";
+import UserProfilePage from "@/components/UserProfilePage";
+
 function App() {
   return (
     <AuthProvider>
@@ -23,6 +25,7 @@ function App() {
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/create" element={<CreatePostPage />} />
+              <Route path="/profile/:username" element={<UserProfilePage />} />
               <Route path="*" element={<div>404 - Page Not Found</div>} />
             </Routes>
           </div>

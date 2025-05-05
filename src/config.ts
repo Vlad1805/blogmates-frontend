@@ -6,4 +6,12 @@ export const ENDPOINTS = {
   REFRESH_TOKEN: "/token/refresh/",
   USER_DATA: "/user/",
   USER_PROFILE: "/profile/",
+  SEND_FOLLOW_REQUEST: "/friend-requests/send/",
+  PENDING_FOLLOW_REQUESTS: "/friend-requests/pending/",
+  PENDING_SENT_FOLLOW_REQUESTS: "/friend-requests/pending/sent/",
+  ACCEPT_FOLLOW_REQUEST: "/friend-requests/accept/",
+  REMOVE_FOLLOW_REQUEST: "/friend-requests/remove/",
+  FOLLOWERS: "/followers/",
+  FOLLOWING: "/following/",
+  UNFOLLOW_USER: "/unfollow/",
 }; 
