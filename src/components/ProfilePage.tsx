@@ -26,6 +26,7 @@ export default function ProfilePage() {
     username: userData?.username || '',
     first_name: userData?.first_name || '',
     last_name: userData?.last_name || '',
+    biography: userData?.biography || '',
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -270,6 +271,13 @@ export default function ProfilePage() {
                   onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                   margin="normal"
                 />
+                <TextField
+                  fullWidth
+                  label="Biography"
+                  value={formData.biography}
+                  onChange={(e) => setFormData({ ...formData, biography: e.target.value })}
+                  margin="normal"
+                />
                 <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                   <Button variant="contained" type="submit">
                     Save Changes
@@ -291,6 +299,29 @@ export default function ProfilePage() {
                   <Typography variant="body1" color="text.secondary" gutterBottom>
                     {userData?.email}
                   </Typography>
+                  {userData?.biography && (
+                    <Box sx={{ 
+                      mt: 2, 
+                      p: 2, 
+                      backgroundColor: (theme) => theme.palette.primary.main + '08',
+                      borderRadius: 2,
+                      border: (theme) => `1px solid ${theme.palette.primary.main}15`,
+                      maxWidth: '600px',
+                      textAlign: 'center'
+                    }}>
+                      <Typography 
+                        variant="body1" 
+                        color="text.secondary"
+                        sx={{
+                          fontStyle: 'italic',
+                          lineHeight: 1.6,
+                          whiteSpace: 'pre-wrap'
+                        }}
+                      >
+                        "{userData.biography}"
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 4 }}>

@@ -42,6 +42,7 @@ export interface UserDataResponse {
   profile_picture: string;  // base64 encoded image data
   profile_picture_content_type: string;  // MIME type of the image
   friendship_status: string;
+  biography: string;
 }
 
 interface UpdateProfileRequest {
@@ -63,6 +64,30 @@ export interface FollowData {
   id: number;
   username: string;
 }
+
+export enum PostVisibility {
+  FRIENDS = 'friends',
+  PUBLIC = 'public',
+  JOURNAL = 'journal'
+}
+
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+  visibility: PostVisibility;
+}
+
+export interface CreatePostResponse {
+  id: number;
+  title: string;
+  content: string;
+  visibility: PostVisibility;
+  author: number;
+  author_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // 🔹 API Client with default settings
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -267,5 +292,38 @@ export async function getFollowing(): Promise<FollowData[]> {
   } catch (error) {
     console.error("Get following failed:", error);
     throw new Error("Error getting following");
+  }
+}
+
+// ✨ **Create Post API**
+export async function createPost(data: CreatePostRequest): Promise<CreatePostResponse> {
+  try {
+    const response = await apiClient.post<CreatePostResponse>(ENDPOINTS.CREATE_POST, data);
+    return response.data;
+  } catch (error) {
+    console.error("Create post failed:", error);
+    throw new Error("Error creating post");
+  }
+}
+
+// ✨ **Get all posts API**
+export async function getAllPosts(): Promise<CreatePostResponse[]> {
+  try {
+    const response = await apiClient.get<CreatePostResponse[]>(ENDPOINTS.GET_ALL_POSTS);
+    return response.data;
+  } catch (error) {
+    console.error("Get all posts failed:", error);
+    throw new Error("Error getting all posts");
+  }
+}
+
+// ✨ **Get my posts API**
+export async function getMyPosts(): Promise<CreatePostResponse[]> {
+  try {
+    const response = await apiClient.get<CreatePostResponse[]>(ENDPOINTS.GET_MY_POSTS);
+    return response.data;
+  } catch (error) {
+    console.error("Get my posts failed:", error);
+    throw new Error("Error getting my posts");
   }
 }

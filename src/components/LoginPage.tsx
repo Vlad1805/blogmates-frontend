@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Box, Button, TextField, Typography, Alert } from "@mui/material";
 import { loginUser } from "@/api/blogmates-backend";
 import { useAuth } from "@/context/AuthContext";
-
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const { setAuthStatus } = useAuth();
-
+  const navigate = useNavigate();
   const handleLogin = async () => {
     setError("");
     setSuccess(false);
@@ -18,6 +18,7 @@ export default function LoginPage() {
       await loginUser({ username, password });
       setAuthStatus(true);
       setSuccess(true);
+      navigate("/profile");
     } catch (err) {
       setError("Login failed. Please check your credentials.");
     }

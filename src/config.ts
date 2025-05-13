@@ -14,4 +14,7 @@ export const ENDPOINTS = {
   FOLLOWERS: "/followers/",
   FOLLOWING: "/following/",
   UNFOLLOW_USER: "/unfollow/",
-}; 
+  CREATE_POST: "/blog/create/",
+  GET_ALL_POSTS: "/blog/all/",
+  GET_MY_POSTS: "/blog/my/",
+};

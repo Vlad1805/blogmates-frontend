@@ -111,6 +111,29 @@ export default function UserProfilePage() {
               <Typography variant="body1" color="text.secondary" gutterBottom>
                 {userData.email}
               </Typography>
+              {userData?.biography && (
+                    <Box sx={{ 
+                      mt: 2, 
+                      p: 2, 
+                      backgroundColor: (theme) => theme.palette.primary.main + '08',
+                      borderRadius: 2,
+                      border: (theme) => `1px solid ${theme.palette.primary.main}15`,
+                      maxWidth: '600px',
+                      textAlign: 'center'
+                    }}>
+                      <Typography 
+                        variant="body1" 
+                        color="text.secondary"
+                        sx={{
+                          fontStyle: 'italic',
+                          lineHeight: 1.6,
+                          whiteSpace: 'pre-wrap'
+                        }}
+                      >
+                        "{userData.biography}"
+                      </Typography>
+                    </Box>
+                  )}
             </Box>
 
             <Box sx={{ display: 'flex', gap: 4 }}>

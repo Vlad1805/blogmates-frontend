@@ -18,6 +18,9 @@ export default function Navbar() {
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2 }}>
+          <Button color="inherit" onClick={() => navigate("/feed")}>
+            Feed
+          </Button>
           {isAuthenticated && (
             <Button color="inherit" onClick={() => navigate("/create")}>
               Create
