@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { Box, Container, Typography, Avatar, Paper, Button, TextField, IconButton, List, ListItem, ListItemAvatar, ListItemText, Divider } from "@mui/material";
+import { Box, Container, Typography, Avatar, Paper, Button, TextField, IconButton, CircularProgress } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import { updateUserProfile, getPendingFriendRequests, getUserProfileById, sendFollowRequest, acceptFollowRequest, declineFollowRequest, getFollowers, getFollowing, FollowData } from "@/api/blogmates-backend";
@@ -16,6 +16,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const { userData, setUserData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [followers, setFollowers] = useState<FollowData[]>([]);
   const [following, setFollowing] = useState<FollowData[]>([]);
@@ -28,6 +29,19 @@ export default function ProfilePage() {
     last_name: userData?.last_name || '',
     biography: userData?.biography || '',
   });
+
+  // Update form data when userData changes
+  useEffect(() => {
+    if (userData) {
+      setFormData({
+        username: userData.username || '',
+        first_name: userData.first_name || '',
+        last_name: userData.last_name || '',
+        biography: userData.biography || '',
+      });
+    }
+  }, [userData]);
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -93,8 +107,12 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsUpdating(true);
     try {
-      const updateData: any = { ...formData };
+      // Remove empty fields from formData
+      const updateData = Object.fromEntries(
+        Object.entries(formData).filter(([_, value]) => value.trim() !== '')
+      );
       
       if (selectedImage) {
         const reader = new FileReader();
@@ -117,6 +135,8 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Failed to update profile:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -256,6 +276,7 @@ export default function ProfilePage() {
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   margin="normal"
+                  disabled={isUpdating}
                 />
                 <TextField
                   fullWidth
@@ -263,6 +284,7 @@ export default function ProfilePage() {
                   value={formData.first_name}
                   onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                   margin="normal"
+                  disabled={isUpdating}
                 />
                 <TextField
                   fullWidth
@@ -270,6 +292,7 @@ export default function ProfilePage() {
                   value={formData.last_name}
                   onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                   margin="normal"
+                  disabled={isUpdating}
                 />
                 <TextField
                   fullWidth
@@ -277,12 +300,22 @@ export default function ProfilePage() {
                   value={formData.biography}
                   onChange={(e) => setFormData({ ...formData, biography: e.target.value })}
                   margin="normal"
+                  disabled={isUpdating}
                 />
                 <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                  <Button variant="contained" type="submit">
-                    Save Changes
+                  <Button 
+                    variant="contained" 
+                    type="submit"
+                    disabled={isUpdating}
+                    startIcon={isUpdating ? <CircularProgress size={20} color="inherit" /> : null}
+                  >
+                    {isUpdating ? 'Saving...' : 'Save Changes'}
                   </Button>
-                  <Button variant="outlined" onClick={() => setIsEditing(false)}>
+                  <Button 
+                    variant="outlined" 
+                    onClick={() => setIsEditing(false)}
+                    disabled={isUpdating}
+                  >
                     Cancel
                   </Button>
                 </Box>

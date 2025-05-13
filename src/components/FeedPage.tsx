@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Paper, Avatar, Chip, Button } from "@mui/material";
+import { Box, Container, Typography, Paper, Avatar, Chip, Button, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import { getAllPosts, CreatePostResponse, PostVisibility, getUserProfile, UserDataResponse } from "@/api/blogmates-backend";
 import { format } from "date-fns";
@@ -27,8 +27,10 @@ export default function FeedPage() {
         for (const post of fetchedPosts) {
           if (!profiles[post.author_name]) {
             try {
-              const profile = await getUserProfile(post.author_name);
-              profiles[post.author_name] = profile;
+              if (post.author_name) {
+                const profile = await getUserProfile(post.author_name);
+                profiles[post.author_name] = profile;
+              }
             } catch (err) {
               console.error(`Failed to fetch profile for ${post.author_name}:`, err);
             }
@@ -86,8 +88,17 @@ export default function FeedPage() {
   if (isLoading) {
     return (
       <Container maxWidth="md">
-        <Box sx={{ my: 4 }}>
-          <Typography>Loading posts...</Typography>
+        <Box sx={{ 
+          my: 4, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          gap: 2 
+        }}>
+          <CircularProgress />
+          <Typography color="text.secondary">
+            Loading posts...
+          </Typography>
         </Box>
       </Container>
     );
@@ -139,7 +150,7 @@ export default function FeedPage() {
                     }}
                     onClick={() => handleAvatarClick(post.author_name)}
                   >
-                    {post.author_name[0].toUpperCase()}
+                    {post.author_name ? post.author_name[0].toUpperCase() : ''}
                   </Avatar>
                   <Box>
                     <Typography 
@@ -153,7 +164,7 @@ export default function FeedPage() {
                       }}
                       onClick={() => handleAvatarClick(post.author_name)}
                     >
-                      {post.author_name}
+                      {post.author_name ? post.author_name : 'Unknown'}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {format(new Date(post.created_at), 'MMM d, yyyy • h:mm a')}

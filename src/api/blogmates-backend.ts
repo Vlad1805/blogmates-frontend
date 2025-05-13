@@ -1,9 +1,6 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios from "axios";
 import { API_BASE_URL, ENDPOINTS } from "@/config";
 
-interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
-  _retry?: boolean;
-}
 
 // 🔹 Interfaces for API requests & responses
 export interface SignUpRequest {
@@ -101,26 +98,23 @@ const apiClient = axios.create({
 // 🔄 Interceptor for Refreshing Tokens
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
+  async (error) => {
     const originalRequest = error.config;
     
     // Only handle 401 errors and if we haven't retried this request
-    if (error.response?.status === 401 && originalRequest && !(originalRequest as CustomAxiosRequestConfig)._retry) {
-      (originalRequest as CustomAxiosRequestConfig)._retry = true;
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
 
       try {
         // Try to refresh the token
-        const response = await axios.post(`${API_BASE_URL}${ENDPOINTS.REFRESH_TOKEN}`, {}, { withCredentials: true });
+        await apiClient.post(ENDPOINTS.REFRESH_TOKEN, {}, { withCredentials: true });
         
         // If refresh successful, retry the original request
-        if (response.status === 200) {
-          return apiClient(originalRequest);
-        }
+        return apiClient(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, clear tokens and redirect to login
-        document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // If refresh fails, redirect to login
         window.location.href = "/login";
+        return Promise.reject(refreshError);
       }
     }
 
