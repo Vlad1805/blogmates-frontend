@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { Box, Container, Typography, Avatar, Paper, Button, TextField, IconButton, CircularProgress } from "@mui/material";
+import { Box, Container, Typography, Avatar, Paper, Button, TextField, IconButton, CircularProgress, Alert } from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import { updateUserProfile, getPendingFriendRequests, getUserProfileById, sendFollowRequest, acceptFollowRequest, declineFollowRequest, getFollowers, getFollowing, FollowData } from "@/api/blogmates-backend";
@@ -17,6 +17,7 @@ export default function ProfilePage() {
   const { userData, setUserData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [followers, setFollowers] = useState<FollowData[]>([]);
   const [following, setFollowing] = useState<FollowData[]>([]);
@@ -108,6 +109,7 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
+    setError(null);
     try {
       // Remove empty fields from formData
       const updateData = Object.fromEntries(
@@ -135,6 +137,7 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Failed to update profile:', error);
+      setError('Failed to update profile. Please try again.');
     } finally {
       setIsUpdating(false);
     }
@@ -229,6 +232,15 @@ export default function ProfilePage() {
       msOverflowStyle: 'none' // IE and Edge
     }}>
       <Box sx={{ my: 4 }}>
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 2 }}
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
         <Paper elevation={3} sx={{ 
           p: 4, 
           borderRadius: 2,

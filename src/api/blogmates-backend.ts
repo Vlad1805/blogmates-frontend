@@ -102,7 +102,11 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
     
     // Only handle 401 errors and if we haven't retried this request
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    // Also check if this is not a refresh token request to prevent infinite loops
+    if (error.response?.status === 401 && 
+        originalRequest && 
+        !originalRequest._retry && 
+        !originalRequest.url?.includes(ENDPOINTS.REFRESH_TOKEN)) {
       originalRequest._retry = true;
 
       try {
