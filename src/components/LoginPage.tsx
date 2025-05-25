@@ -20,7 +20,7 @@ export default function LoginPage() {
       setSuccess(true);
       navigate("/profile");
     } catch (err) {
-      setError("Login failed. Please check your credentials.");
+      setError((err as any)?.response?.data?.error || "Login failed. Please check your credentials.");
     }
   };
 

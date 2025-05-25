@@ -10,6 +10,7 @@ import ProfilePage from "@/components/ProfilePage";
 import CreatePostPage from "@/components/CreatePostPage";
 import UserProfilePage from "@/components/UserProfilePage";
 import FeedPage from "@/components/FeedPage";
+import BlogPostPage from "@/components/BlogPostPage";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
               <Route path="/create" element={<CreatePostPage />} />
               <Route path="/profile/:username" element={<UserProfilePage />} />
               <Route path="/feed" element={<FeedPage />} />
+              <Route path="/blog/:id" element={<BlogPostPage />} />
               <Route path="*" element={<div>404 - Page Not Found</div>} />
             </Routes>
           </div>

@@ -22,7 +22,7 @@ export default function SignUpPage() {
       const data = await signUpApi({ username, email, password, password2 });
       setSuccessMessage(data.message);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to sign up");
+      setError(err.response?.data?.message || err.response?.data?.error || "Failed to sign up");
     } finally {
       setLoading(false);
     }

@@ -20,7 +20,7 @@ export default function UserProfilePage() {
         setUserData(data);
         setError(null);
       } catch (err) {
-        setError("Failed to load user profile");
+        setError((err as any)?.response?.data?.error || "Failed to load user profile");
         setUserData(null);
       }
     };

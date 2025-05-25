@@ -85,6 +85,25 @@ export interface CreatePostResponse {
   updated_at: string;
 }
 
+export interface PostCommentRequest {
+  content: string;
+}
+
+export interface PostCommentResponse {
+  id: number;
+  content: string;
+  author: number;
+  author_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LikesResponse {
+  id: number;
+  user: number;
+  created_at: string;
+}
+
 // 🔹 API Client with default settings
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -137,9 +156,9 @@ export async function loginUser(data: LoginRequest): Promise<LoginResponse> {
   try {
     const response = await apiClient.post<LoginResponse>(ENDPOINTS.LOGIN, data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login failed:", error);
-    throw new Error("Invalid credentials or server error");
+    throw error;
   }
 }
 
@@ -148,9 +167,9 @@ export async function logoutUser(): Promise<LogoutResponse> {
   try {
     const response = await apiClient.post<LogoutResponse>(ENDPOINTS.LOGOUT);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Logout failed:", error);
-    throw new Error("Error logging out");
+    throw error;
   }
 }
 
@@ -159,9 +178,9 @@ export async function getUserData(): Promise<UserDataResponse> {
   try {
     const response = await apiClient.get<UserDataResponse>(ENDPOINTS.USER_DATA);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get user data failed:", error);
-    throw new Error("Error getting user data");
+    throw error;
   }
 }
 
@@ -170,9 +189,9 @@ export async function getUserProfile(username: string): Promise<UserDataResponse
   try {
     const response = await apiClient.post<UserDataResponse>(ENDPOINTS.USER_PROFILE, { username: username });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get user profile failed:", error);
-    throw new Error("Error getting user profile");
+    throw error;
   }
 }
 
@@ -183,9 +202,9 @@ export async function getUserProfileById(id: number): Promise<UserDataResponse> 
       params: { user_id: id }
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get user profile by ID failed:", error);
-    throw new Error("Error getting user profile by ID");
+    throw error;
   }
 }
 
@@ -194,9 +213,9 @@ export async function updateUserProfile(data: UpdateProfileRequest): Promise<Use
   try {
     const response = await apiClient.patch<UserDataResponse>(ENDPOINTS.USER_PROFILE, data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Update user profile failed:", error);
-    throw new Error("Error updating user profile");
+    throw error;
   }
 }
 
@@ -216,9 +235,9 @@ export async function sendFollowRequest(id: number): Promise<void> {
     await apiClient.post(ENDPOINTS.SEND_FOLLOW_REQUEST, {
       receiver_id: id
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Send friend request failed:", error);
-    throw new Error("Error sending friend request");
+    throw error;
   }
 }
 
@@ -227,9 +246,9 @@ export async function getPendingFriendRequests(): Promise<PendingRequest[]> {
   try {
     const response = await apiClient.get<PendingRequest[]>(ENDPOINTS.PENDING_FOLLOW_REQUESTS);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get pending friend requests failed:", error);
-    throw new Error("Error getting pending friend requests");
+    throw error;
   }
 }
 
@@ -238,9 +257,9 @@ export async function getPendingSentFriendRequests(): Promise<PendingRequest[]> 
   try {
     const response = await apiClient.get<PendingRequest[]>(ENDPOINTS.PENDING_SENT_FOLLOW_REQUESTS);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get pending sent friend requests failed:", error);
-    throw new Error("Error getting pending sent friend requests");
+    throw error;
   }
 }
 
@@ -248,9 +267,9 @@ export async function getPendingSentFriendRequests(): Promise<PendingRequest[]> 
 export async function acceptFollowRequest(id: number): Promise<void> {
   try {
     await apiClient.post(ENDPOINTS.ACCEPT_FOLLOW_REQUEST + id + "/");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Accept follow request failed:", error);
-    throw new Error("Error accepting follow request");
+    throw error;
   }
 }
 
@@ -258,9 +277,9 @@ export async function acceptFollowRequest(id: number): Promise<void> {
 export async function declineFollowRequest(id: number): Promise<void> {
   try {
     await apiClient.delete(ENDPOINTS.REMOVE_FOLLOW_REQUEST + id + "/");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Decline follow request failed:", error);
-    throw new Error("Error declining follow request");
+    throw error;
   }
 }
 
@@ -268,18 +287,19 @@ export async function declineFollowRequest(id: number): Promise<void> {
 export async function unfollowUser(id: number): Promise<void> {
   try {
     await apiClient.delete(ENDPOINTS.UNFOLLOW_USER + id + "/");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Unfollow user failed:", error);
-    throw new Error("Error unfollowing user");
+    throw error;
   }
 }
+
 export async function getFollowers(): Promise<FollowData[]> {
   try {
     const response = await apiClient.get<FollowData[]>(ENDPOINTS.FOLLOWERS);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get followers failed:", error);
-    throw new Error("Error getting followers");
+    throw error;
   }
 }
 
@@ -287,9 +307,9 @@ export async function getFollowing(): Promise<FollowData[]> {
   try {
     const response = await apiClient.get<FollowData[]>(ENDPOINTS.FOLLOWING);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get following failed:", error);
-    throw new Error("Error getting following");
+    throw error;
   }
 }
 
@@ -298,9 +318,9 @@ export async function createPost(data: CreatePostRequest): Promise<CreatePostRes
   try {
     const response = await apiClient.post<CreatePostResponse>(ENDPOINTS.CREATE_POST, data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Create post failed:", error);
-    throw new Error("Error creating post");
+    throw error; // Pass through the original error to preserve the server's message
   }
 }
 
@@ -309,9 +329,20 @@ export async function getAllPosts(): Promise<CreatePostResponse[]> {
   try {
     const response = await apiClient.get<CreatePostResponse[]>(ENDPOINTS.GET_ALL_POSTS);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get all posts failed:", error);
-    throw new Error("Error getting all posts");
+    throw error;
+  }
+}
+
+// ✨ **Get post by id API**
+export async function getPostById(id: number): Promise<CreatePostResponse> {
+  try {
+    const response = await apiClient.get<CreatePostResponse>(ENDPOINTS.GET_POST_BY_ID + id + "/");
+    return response.data;
+  } catch (error: any) {
+    console.error("Get post by id failed:", error);
+    throw error;
   }
 }
 
@@ -320,8 +351,135 @@ export async function getMyPosts(): Promise<CreatePostResponse[]> {
   try {
     const response = await apiClient.get<CreatePostResponse[]>(ENDPOINTS.GET_MY_POSTS);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get my posts failed:", error);
-    throw new Error("Error getting my posts");
+    throw error;
+  }
+}
+
+// ✨ **Post comment API**
+export async function postComment(post_id: number, data: PostCommentRequest): Promise<PostCommentResponse> {
+  try {
+    const response = await apiClient.post<PostCommentResponse>(ENDPOINTS.POST_COMMENT + post_id + "/", data);
+    return response.data;
+  } catch (error: any) {
+    console.error("Post comment failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Delete comment API**
+export async function deleteComment(comment_id: number, post_id: number): Promise<void> {
+  try {
+    await apiClient.delete(ENDPOINTS.POST_COMMENT + post_id + "/" + comment_id + "/");
+  } catch (error: any) {
+    console.error("Delete comment failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Get comments API**
+export async function getComments(post_id: number): Promise<PostCommentResponse[]> {
+  try {
+    const response = await apiClient.get<PostCommentResponse[]>(ENDPOINTS.GET_COMMENTS + post_id + "/");
+    return response.data;
+  } catch (error: any) {
+    console.error("Get comments failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Get comments count API**
+export async function getCommentsCount(post_id: number): Promise<{ comment_count: number }> {
+  try {
+    const response = await apiClient.get<{ comment_count: number }>(ENDPOINTS.GET_COMMENTS_COUNT + post_id + "/");
+    return response.data;
+  } catch (error: any) {
+    console.error("Get comments count failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Post like comment API**
+export async function postLikeComment(comment_id: number): Promise<void> {
+  try {
+    await apiClient.post(ENDPOINTS.POST_LIKE_COMMENT + comment_id + "/");
+  } catch (error: any) {
+    console.error("Post like comment failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Delete like comment API**
+export async function deleteLikeComment(comment_id: number): Promise<void> {
+  try {
+    await apiClient.delete(ENDPOINTS.POST_LIKE_COMMENT + comment_id + "/");
+  } catch (error: any) {
+    console.error("Delete like comment failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Get comment likes API**
+export async function getCommentLikes(comment_id: number): Promise<LikesResponse[]> {
+  try {
+    const response = await apiClient.get<LikesResponse[]>(ENDPOINTS.GET_COMMENT_LIKES + comment_id + "/");
+    return response.data;
+  } catch (error: any) {
+    console.error("Get comment likes failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Get comment likes count API**
+export async function getCommentLikesCount(comment_id: number): Promise<number> {
+  try {
+    const response = await apiClient.get<number>(ENDPOINTS.GET_COMMENT_LIKES_COUNT + comment_id + "/");
+    return response.data;
+  } catch (error: any) {
+    console.error("Get comment likes count failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Post blog like API**
+export async function postBlogLike(post_id: number): Promise<void> {
+  try {
+    await apiClient.post(ENDPOINTS.POST_BLOG_LIKE + post_id + "/");
+  } catch (error: any) {
+    console.error("Post blog like failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Delete blog like API**
+export async function deleteBlogLike(post_id: number): Promise<void> {
+  try {
+    await apiClient.delete(ENDPOINTS.POST_BLOG_LIKE + post_id + "/");
+  } catch (error: any) {
+    console.error("Delete blog like failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Get blog likes API**
+export async function getBlogLikes(post_id: number): Promise<LikesResponse[]> {
+  try {
+    const response = await apiClient.get<LikesResponse[]>(ENDPOINTS.GET_BLOG_LIKES + post_id + "/");
+    return response.data;
+  } catch (error: any) {
+    console.error("Get blog likes failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Get blog likes count API**
+export async function getBlogLikesCount(post_id: number): Promise<number> {
+  try {
+    const response = await apiClient.get<number>(ENDPOINTS.GET_BLOG_LIKES_COUNT + post_id + "/");
+    return response.data;
+  } catch (error: any) {
+    console.error("Get blog likes count failed:", error);
+    throw error;
   }
 }

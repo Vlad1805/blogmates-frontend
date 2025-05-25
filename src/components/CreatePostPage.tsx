@@ -1,4 +1,4 @@
-import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Alert } from "@mui/material";
 import { useState } from "react";
 import { createPost, PostVisibility } from "@/api/blogmates-backend";
 import { useNavigate } from "react-router-dom";
@@ -16,15 +16,29 @@ export default function CreatePostPage() {
     setIsLoading(true);
     setError(null);
 
+    if (!title.trim() || !content.trim()) {
+      setError("Title and content are required");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       await createPost({
-        title,
-        content,
+        title: title.trim(),
+        content: content.trim(),
         visibility
       });
-      navigate("/profile"); // Redirect to profile after successful creation
-    } catch (err) {
-      setError("Failed to create post. Please try again.");
+      navigate("/feed"); // Redirect to feed after successful creation
+    } catch (err: any) {
+      console.log('Full error:', err);
+      
+      // Extract error message from the server response
+      const errorMessage = err.response?.data?.error || 
+                          err.response?.data?.message || 
+                          err.message || 
+                          "Failed to create post. Please try again.";
+      
+      setError(errorMessage);
       console.error("Failed to create post:", err);
     } finally {
       setIsLoading(false);
@@ -38,26 +52,40 @@ export default function CreatePostPage() {
           Create New Post
         </Typography>
         {error && (
-          <Typography color="error" sx={{ mb: 2 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 2 }}
+            onClose={() => setError(null)}
+          >
             {error}
-          </Typography>
+          </Alert>
         )}
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setError(null);
+            }}
             fullWidth
             required
+            error={!!error && !title.trim()}
+            helperText={error && !title.trim() ? "Title is required" : ""}
           />
           <TextField
             label="Content"
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => {
+              setContent(e.target.value);
+              setError(null);
+            }}
             multiline
             rows={6}
             fullWidth
             required
+            error={!!error && !content.trim()}
+            helperText={error && !content.trim() ? "Content is required" : ""}
           />
           <FormControl fullWidth>
             <InputLabel>Visibility</InputLabel>

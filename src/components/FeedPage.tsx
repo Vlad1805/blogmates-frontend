@@ -1,8 +1,8 @@
-import { Box, Container, Typography, Paper, Avatar, Chip, Button, CircularProgress } from "@mui/material";
+import { Box, Container, Typography, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
-import { getAllPosts, CreatePostResponse, PostVisibility, getUserProfile, UserDataResponse } from "@/api/blogmates-backend";
-import { format } from "date-fns";
+import { getAllPosts, CreatePostResponse, getUserProfile, UserDataResponse } from "@/api/blogmates-backend";
 import { useNavigate } from "react-router-dom";
+import BlogCardComponent from "./BlogCardComponent";
 
 const PREVIEW_CHAR_LIMIT = 300;
 const PREVIEW_LINE_LIMIT = 8;
@@ -38,7 +38,7 @@ export default function FeedPage() {
         }
         setUserProfiles(profiles);
       } catch (err) {
-        setError("Failed to load posts");
+        setError((err as any)?.response?.data?.error || "Failed to load posts");
         console.error("Failed to load posts:", err);
       } finally {
         setIsLoading(false);
@@ -50,19 +50,6 @@ export default function FeedPage() {
 
   const handleAvatarClick = (username: string) => {
     navigate(`/profile/${username}`);
-  };
-
-  const getVisibilityColor = (visibility: PostVisibility) => {
-    switch (visibility) {
-      case PostVisibility.PUBLIC:
-        return "success";
-      case PostVisibility.FRIENDS:
-        return "primary";
-      case PostVisibility.JOURNAL:
-        return "secondary";
-      default:
-        return "default";
-    }
   };
 
   const isContentLong = (content: string) => {
@@ -126,100 +113,32 @@ export default function FeedPage() {
             const expanded = expandedPosts[post.id] || false;
             const longContent = isContentLong(post.content);
             const contentToShow = expanded || !longContent ? post.content : getPreviewContent(post.content);
+            
             return (
-              <Paper 
-                key={post.id} 
-                elevation={2} 
-                sx={{ 
-                  p: 3,
-                  backgroundColor: (theme) => theme.palette.primary.main + '0A',
-                  border: (theme) => `1px solid ${theme.palette.primary.main}1A`
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Avatar 
-                    src={authorProfile?.profile_picture ? 
-                      `data:${authorProfile.profile_picture_content_type};base64,${authorProfile.profile_picture}` : 
-                      undefined
-                    }
-                    sx={{ 
-                      cursor: 'pointer',
-                      '&:hover': {
-                        opacity: 0.8
-                      }
-                    }}
-                    onClick={() => handleAvatarClick(post.author_name)}
-                  >
-                    {post.author_name ? post.author_name[0].toUpperCase() : ''}
-                  </Avatar>
-                  <Box>
-                    <Typography 
-                      variant="subtitle1" 
-                      sx={{ 
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                      onClick={() => handleAvatarClick(post.author_name)}
-                    >
-                      {post.author_name ? post.author_name : 'Unknown'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {format(new Date(post.created_at), 'MMM d, yyyy • h:mm a')}
-                    </Typography>
-                  </Box>
-                  <Chip 
-                    label={post.visibility.charAt(0).toUpperCase() + post.visibility.slice(1)} 
-                    size="small"
-                    color={getVisibilityColor(post.visibility)}
-                    sx={{ ml: 'auto' }}
-                  />
-                </Box>
-                <Typography variant="h5" gutterBottom>
-                  {post.title}
-                </Typography>
-                {longContent && (
-                  <Button size="small" sx={{ mb: 1 }} onClick={() => toggleExpand(post.id)}>
-                    {expanded ? 'Show less' : 'Show more'}
-                  </Button>
-                )}
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    whiteSpace: 'pre-wrap',
-                    lineHeight: 1.6
-                  }}
-                >
-                  {contentToShow}
-                </Typography>
-                {post.updated_at !== post.created_at && (
-                  <Typography 
-                    variant="caption" 
-                    color="text.secondary"
-                    sx={{ display: 'block', mt: 2 }}
-                  >
-                    Edited {format(new Date(post.updated_at), 'MMM d, yyyy • h:mm a')}
-                  </Typography>
-                )}
-              </Paper>
+              <BlogCardComponent
+                key={post.id}
+                post={post}
+                authorProfile={authorProfile}
+                expanded={expanded}
+                onAvatarClick={handleAvatarClick}
+                onToggleExpand={toggleExpand}
+                isContentLong={longContent}
+                contentToShow={contentToShow}
+              />
             );
           })}
           {posts.length === 0 && (
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: 3,
-                textAlign: 'center',
-                backgroundColor: (theme) => theme.palette.primary.main + '0A',
-                border: (theme) => `1px solid ${theme.palette.primary.main}1A`
-              }}
-            >
+            <Box sx={{ 
+              p: 3,
+              textAlign: 'center',
+              backgroundColor: (theme) => theme.palette.primary.main + '0A',
+              border: (theme) => `1px solid ${theme.palette.primary.main}1A`,
+              borderRadius: 1
+            }}>
               <Typography color="text.secondary">
                 No posts yet. Be the first to create one!
               </Typography>
-            </Paper>
+            </Box>
           )}
         </Box>
       </Box>

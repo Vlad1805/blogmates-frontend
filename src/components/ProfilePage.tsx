@@ -137,7 +137,7 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Failed to update profile:', error);
-      setError('Failed to update profile. Please try again.');
+      setError((error as any)?.response?.data?.error || "Failed to update profile. Please try again.");
     } finally {
       setIsUpdating(false);
     }
