@@ -1,11 +1,12 @@
-import { Box, Container, Typography, CircularProgress, Avatar, Chip, IconButton } from "@mui/material";
+import { Box, Container, Typography, CircularProgress, Avatar, Chip, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getPostById, CreatePostResponse, PostVisibility, getUserProfile, UserDataResponse, getBlogLikes, postBlogLike, deleteBlogLike, LikesResponse, getCommentsCount, getComments, PostCommentResponse } from "@/api/blogmates-backend";
+import { getPostById, CreatePostResponse, PostVisibility, getUserProfile, UserDataResponse, getBlogLikes, postBlogLike, deleteBlogLike, LikesResponse, getCommentsCount, getComments, PostCommentResponse, deletePostById } from "@/api/blogmates-backend";
 import { format } from "date-fns";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import CommentIcon from '@mui/icons-material/Comment';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from "../context/AuthContext";
 import LikesPopup from "./LikesPopup";
 import CommentsSection from "./CommentsSection";
@@ -40,6 +41,8 @@ export default function BlogPostPage() {
   const [showLikesPopup, setShowLikesPopup] = useState(false);
   const [comments, setComments] = useState<PostCommentResponse[]>([]);
   const [commentProfiles, setCommentProfiles] = useState<Record<string, UserDataResponse>>({});
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -62,14 +65,14 @@ export default function BlogPostPage() {
         }
 
         // Fetch likes and comments count
+        const [likes, commentsResponse] = await Promise.all([
+          getBlogLikes(postId),
+          getCommentsCount(postId)
+        ]);
+        setLikes(likes);
+        setLikeCount(likes.length);
+        setCommentCount(commentsResponse.comment_count);
         if (userData?.id) {
-          const [likes, commentsResponse] = await Promise.all([
-            getBlogLikes(postId),
-            getCommentsCount(postId)
-          ]);
-          setLikes(likes);
-          setLikeCount(likes.length);
-          setCommentCount(commentsResponse.comment_count);
           setIsLiked(likes.some(like => like.user === userData.id));
         }
 
@@ -141,6 +144,42 @@ export default function BlogPostPage() {
       }));
     } catch (err) {
       console.error(`Failed to fetch profile for ${newComment.author_name}:`, err);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!post || isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      await deletePostById(post.id);
+      navigate('/feed');
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+      setError((error as any)?.response?.data?.error || "Failed to delete post");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
+  const handleCommentDeleted = async () => {
+    if (!post) return;
+    
+    try {
+      // Update comment count
+      const commentsResponse = await getCommentsCount(post.id);
+      setCommentCount(commentsResponse.comment_count);
+      
+      // Refresh comments list
+      const fetchedComments = await getComments(post.id);
+      setComments(fetchedComments);
+    } catch (error) {
+      console.error("Failed to refresh comments after deletion:", error);
     }
   };
 
@@ -220,12 +259,23 @@ export default function BlogPostPage() {
               {format(new Date(post.created_at), 'MMM d, yyyy • h:mm a')}
             </Typography>
           </Box>
-          <Chip 
-            label={post.visibility.charAt(0).toUpperCase() + post.visibility.slice(1)} 
-            size="small"
-            color={getVisibilityColor(post.visibility)}
-            sx={{ ml: 'auto' }}
-          />
+          <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip 
+              label={post.visibility.charAt(0).toUpperCase() + post.visibility.slice(1)} 
+              size="small"
+              color={getVisibilityColor(post.visibility)}
+            />
+            {userData?.id === post.author && (
+              <IconButton
+                color="error"
+                onClick={handleDeleteClick}
+                size="small"
+                sx={{ ml: 1 }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
+          </Box>
         </Box>
         <Typography variant="h3" gutterBottom sx={{ mb: 2 }}>
           {post.title}
@@ -287,12 +337,40 @@ export default function BlogPostPage() {
           commentProfiles={commentProfiles}
           commentCount={commentCount}
           onAvatarClick={handleAvatarClick}
+          onCommentDeleted={handleCommentDeleted}
+          postId={post.id}
         />
         <LikesPopup
           open={showLikesPopup}
           onClose={() => setShowLikesPopup(false)}
           likes={likes}
         />
+        <Dialog
+          open={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+        >
+          <DialogTitle>Delete Post</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDeleteConfirm}
+              color="error"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Container>
   );

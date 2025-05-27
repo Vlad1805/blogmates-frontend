@@ -1,10 +1,11 @@
-import { Box, Paper, Avatar, Typography, Chip, Button, IconButton } from "@mui/material";
+import { Box, Paper, Avatar, Typography, Chip, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import { format } from "date-fns";
-import { CreatePostResponse, PostVisibility, UserDataResponse, getBlogLikes, postBlogLike, deleteBlogLike, LikesResponse, getCommentsCount } from "@/api/blogmates-backend";
+import { CreatePostResponse, PostVisibility, UserDataResponse, getBlogLikes, postBlogLike, deleteBlogLike, LikesResponse, getCommentsCount, deletePostById } from "@/api/blogmates-backend";
 import { useEffect, useState } from "react";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import CommentIcon from '@mui/icons-material/Comment';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from "../context/AuthContext";
 import LikesPopup from "./LikesPopup";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +18,7 @@ interface BlogCardProps {
   onToggleExpand: (postId: number) => void;
   isContentLong: boolean;
   contentToShow: string;
+  onPostDeleted?: () => void;
 }
 
 const getVisibilityColor = (visibility: PostVisibility) => {
@@ -40,6 +42,7 @@ export default function BlogCardComponent({
   onToggleExpand,
   isContentLong,
   contentToShow,
+  onPostDeleted
 }: BlogCardProps) {
   const { userData } = useAuth();
   const [likeCount, setLikeCount] = useState<number>(0);
@@ -49,6 +52,8 @@ export default function BlogCardComponent({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showLikesPopup, setShowLikesPopup] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,7 +67,9 @@ export default function BlogCardComponent({
         setLikes(likes);
         setLikeCount(likes.length);
         setCommentCount(commentsResponse.comment_count);
-        setIsLiked(likes.some(like => like.user === userData?.id));
+        if (userData?.id) {
+          setIsLiked(likes.some(like => like.user === userData.id));
+        }
         setError(null);
       } catch (error) {
         console.error("Failed to fetch counts:", error);
@@ -70,9 +77,7 @@ export default function BlogCardComponent({
       }
     };
 
-    if (userData?.id) {
-      fetchCounts();
-    }
+    fetchCounts();
   }, [post.id, userData?.id]);
 
   const handleLikeClick = async () => {
@@ -96,6 +101,25 @@ export default function BlogCardComponent({
       setError((error as any)?.response?.data?.error || "Failed to update like");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      await deletePostById(post.id);
+      onPostDeleted?.();
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -147,12 +171,22 @@ export default function BlogCardComponent({
             {format(new Date(post.created_at), 'MMM d, yyyy • h:mm a')}
           </Typography>
         </Box>
-        <Chip 
-          label={post.visibility.charAt(0).toUpperCase() + post.visibility.slice(1)} 
-          size="small"
-          color={getVisibilityColor(post.visibility)}
-          sx={{ ml: 'auto' }}
-        />
+        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Chip 
+            label={post.visibility.charAt(0).toUpperCase() + post.visibility.slice(1)} 
+            size="small"
+            color={getVisibilityColor(post.visibility)}
+          />
+          {userData?.id === post.author && (
+            <IconButton
+              color="error"
+              onClick={handleDeleteClick}
+              size="small"
+            >
+              <DeleteIcon />
+            </IconButton>
+          )}
+        </Box>
       </Box>
       <Typography 
         variant="h5" 
@@ -235,6 +269,32 @@ export default function BlogCardComponent({
           Edited {format(new Date(post.updated_at), 'MMM d, yyyy • h:mm a')}
         </Typography>
       )}
+      <Dialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+      >
+        <DialogTitle>Delete Post</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this post? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setShowDeleteDialog(false)}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteConfirm}
+            color="error"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 } 

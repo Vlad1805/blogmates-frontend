@@ -72,6 +72,15 @@ export default function FeedPage() {
     setExpandedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
 
+  const handlePostDeleted = async () => {
+    try {
+      const fetchedPosts = await getAllPosts();
+      setPosts(fetchedPosts);
+    } catch (err) {
+      console.error("Failed to refresh posts after deletion:", err);
+    }
+  };
+
   if (isLoading) {
     return (
       <Container maxWidth="md">
@@ -124,6 +133,7 @@ export default function FeedPage() {
                 onToggleExpand={toggleExpand}
                 isContentLong={longContent}
                 contentToShow={contentToShow}
+                onPostDeleted={handlePostDeleted}
               />
             );
           })}

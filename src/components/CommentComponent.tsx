@@ -1,29 +1,30 @@
-import { Box, Typography, Avatar, IconButton } from "@mui/material";
-import { PostCommentResponse, UserDataResponse, postLikeComment, deleteLikeComment, getCommentLikes, LikesResponse } from "@/api/blogmates-backend";
+import { Box, Typography, Avatar, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import { PostCommentResponse, UserDataResponse, postLikeComment, deleteLikeComment, getCommentLikes, LikesResponse, deleteComment } from "@/api/blogmates-backend";
 import { format } from "date-fns";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import LikesPopup from "./LikesPopup";
 
 interface CommentComponentProps {
   comment: PostCommentResponse;
-  authorProfile?: UserDataResponse;
+  authorProfile: UserDataResponse | null;
   onAvatarClick: (username: string) => void;
+  onCommentDeleted: () => void;
+  postId: number;
 }
 
-export default function CommentComponent({
-  comment,
-  authorProfile,
-  onAvatarClick
-}: CommentComponentProps) {
+export default function CommentComponent({ comment, authorProfile, onAvatarClick, onCommentDeleted, postId }: CommentComponentProps) {
   const { userData } = useAuth();
   const [likeCount, setLikeCount] = useState<number>(0);
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [isLoadingLike, setIsLoadingLike] = useState<boolean>(false);
   const [likes, setLikes] = useState<LikesResponse[]>([]);
   const [showLikesPopup, setShowLikesPopup] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchLikes = async () => {
@@ -62,8 +63,27 @@ export default function CommentComponent({
     }
   };
 
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteComment(comment.id, postId);
+      onCommentDeleted();
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   return (
-    <Box sx={{ display: 'flex', gap: 2 }}>
+    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
       <Avatar 
         src={authorProfile?.profile_picture ? 
           `data:${authorProfile.profile_picture_content_type};base64,${authorProfile.profile_picture}` : 
@@ -84,6 +104,7 @@ export default function CommentComponent({
           <Typography 
             variant="subtitle2" 
             sx={{ 
+              fontWeight: 500,
               cursor: 'pointer',
               '&:hover': {
                 textDecoration: 'underline'
@@ -96,8 +117,18 @@ export default function CommentComponent({
           <Typography variant="caption" color="text.secondary">
             {format(new Date(comment.created_at), 'MMM d, yyyy • h:mm a')}
           </Typography>
+          {userData?.id === comment.author && (
+            <IconButton
+              color="error"
+              onClick={handleDeleteClick}
+              size="small"
+              sx={{ ml: 'auto' }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
-        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 1 }}>
+        <Typography variant="body2" sx={{ mb: 1 }}>
           {comment.content}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -107,17 +138,9 @@ export default function CommentComponent({
             color={isLiked ? "primary" : "default"}
             size="small"
           >
-            {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            {isLiked ? <FavoriteIcon fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
           </IconButton>
-          <Typography 
-            variant="caption" 
-            color="text.secondary"
-            sx={{ 
-              cursor: 'pointer',
-              '&:hover': { textDecoration: 'underline' }
-            }}
-            onClick={() => setShowLikesPopup(true)}
-          >
+          <Typography variant="caption" color="text.secondary">
             {likeCount} {likeCount === 1 ? 'like' : 'likes'}
           </Typography>
         </Box>
@@ -127,6 +150,32 @@ export default function CommentComponent({
         onClose={() => setShowLikesPopup(false)}
         likes={likes}
       />
+      <Dialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+      >
+        <DialogTitle>Delete Comment</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this comment? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setShowDeleteDialog(false)}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteConfirm}
+            color="error"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 } 

@@ -11,6 +11,7 @@ import CreatePostPage from "@/components/CreatePostPage";
 import UserProfilePage from "@/components/UserProfilePage";
 import FeedPage from "@/components/FeedPage";
 import BlogPostPage from "@/components/BlogPostPage";
+import AboutPage from "./components/AboutPage";
 
 function App() {
   return (
@@ -29,7 +30,7 @@ function App() {
           <div style={{ paddingTop: "64px" }}>
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/about" element={<div>About Page (Coming Soon)</div>} />
+              <Route path="/about" element={<AboutPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/profile" element={<ProfilePage />} />

@@ -346,6 +346,16 @@ export async function getPostById(id: number): Promise<CreatePostResponse> {
   }
 }
 
+// ✨ **Delete post by id API**
+export async function deletePostById(id: number): Promise<void> {
+  try {
+    await apiClient.delete(ENDPOINTS.GET_POST_BY_ID + id + "/");
+  } catch (error: any) {
+    console.error("Delete post by id failed:", error);
+    throw error;
+  }
+}
+
 // ✨ **Get my posts API**
 export async function getMyPosts(): Promise<CreatePostResponse[]> {
   try {

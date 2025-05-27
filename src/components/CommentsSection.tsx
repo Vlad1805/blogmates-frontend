@@ -7,37 +7,35 @@ interface CommentsSectionProps {
   commentProfiles: Record<string, UserDataResponse>;
   commentCount: number;
   onAvatarClick: (username: string) => void;
+  onCommentDeleted: () => void;
+  postId: number;
 }
 
 export default function CommentsSection({
   comments,
   commentProfiles,
   commentCount,
-  onAvatarClick
+  onAvatarClick,
+  onCommentDeleted,
+  postId
 }: CommentsSectionProps) {
   return (
-    <>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Comments ({commentCount})
-        </Typography>
-        {comments.length > 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {comments.map((comment) => (
-              <CommentComponent
-                key={comment.id}
-                comment={comment}
-                authorProfile={commentProfiles[comment.author_name]}
-                onAvatarClick={onAvatarClick}
-              />
-            ))}
-          </Box>
-        ) : (
-          <Typography color="text.secondary">
-            No comments yet. Be the first to comment!
-          </Typography>
-        )}
+    <Box sx={{ mt: 4 }}>
+      <Typography variant="h6" gutterBottom>
+        Comments ({commentCount})
+      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {comments.map((comment) => (
+          <CommentComponent
+            key={comment.id}
+            comment={comment}
+            authorProfile={commentProfiles[comment.author_name]}
+            onAvatarClick={onAvatarClick}
+            onCommentDeleted={onCommentDeleted}
+            postId={postId}
+          />
+        ))}
       </Box>
-    </>
+    </Box>
   );
 } 
