@@ -1,4 +1,4 @@
-import { Box, Container, Typography, CircularProgress, Avatar, Chip, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import { Box, Container, Typography, CircularProgress, Avatar, Chip, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, Pagination } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getPostById, CreatePostResponse, PostVisibility, getUserProfile, UserDataResponse, getBlogLikes, postBlogLike, deleteBlogLike, LikesResponse, getCommentsCount, getComments, PostCommentResponse, deletePostById } from "@/api/blogmates-backend";
@@ -43,6 +43,17 @@ export default function BlogPostPage() {
   const [commentProfiles, setCommentProfiles] = useState<Record<string, UserDataResponse>>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [commentPagination, setCommentPagination] = useState<{
+    count: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+  }>({
+    count: 0,
+    totalPages: 1,
+    currentPage: 1,
+    pageSize: 5
+  });
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -76,13 +87,19 @@ export default function BlogPostPage() {
           setIsLiked(likes.some(like => like.user === userData.id));
         }
 
-        // Fetch comments
-        const fetchedComments = await getComments(postId);
-        setComments(fetchedComments);
+        // Fetch comments with pagination
+        const fetchedComments = await getComments(postId, 1, 5);
+        setComments(fetchedComments.results);
+        setCommentPagination({
+          count: fetchedComments.count,
+          totalPages: fetchedComments.total_pages,
+          currentPage: fetchedComments.current_page,
+          pageSize: fetchedComments.page_size
+        });
 
         // Fetch profiles for all comment authors
         const profiles: Record<string, UserDataResponse> = {};
-        for (const comment of fetchedComments) {
+        for (const comment of fetchedComments.results) {
           if (!profiles[comment.author_name]) {
             try {
               const profile = await getUserProfile(comment.author_name);
@@ -167,6 +184,37 @@ export default function BlogPostPage() {
     }
   };
 
+  const handleCommentPageChange = async (event: React.ChangeEvent<unknown>, value: number) => {
+    if (!post) return;
+    
+    try {
+      const fetchedComments = await getComments(post.id, value, 5);
+      setComments(fetchedComments.results);
+      setCommentPagination({
+        count: fetchedComments.count,
+        totalPages: fetchedComments.total_pages,
+        currentPage: fetchedComments.current_page,
+        pageSize: fetchedComments.page_size
+      });
+
+      // Fetch profiles for new comments
+      const profiles: Record<string, UserDataResponse> = { ...commentProfiles };
+      for (const comment of fetchedComments.results) {
+        if (!profiles[comment.author_name]) {
+          try {
+            const profile = await getUserProfile(comment.author_name);
+            profiles[comment.author_name] = profile;
+          } catch (err) {
+            console.error(`Failed to fetch profile for ${comment.author_name}:`, err);
+          }
+        }
+      }
+      setCommentProfiles(profiles);
+    } catch (error) {
+      console.error("Failed to fetch comments:", error);
+    }
+  };
+
   const handleCommentDeleted = async () => {
     if (!post) return;
     
@@ -175,9 +223,15 @@ export default function BlogPostPage() {
       const commentsResponse = await getCommentsCount(post.id);
       setCommentCount(commentsResponse.comment_count);
       
-      // Refresh comments list
-      const fetchedComments = await getComments(post.id);
-      setComments(fetchedComments);
+      // Refresh comments list with current page
+      const fetchedComments = await getComments(post.id, commentPagination.currentPage, 5);
+      setComments(fetchedComments.results);
+      setCommentPagination({
+        count: fetchedComments.count,
+        totalPages: fetchedComments.total_pages,
+        currentPage: fetchedComments.current_page,
+        pageSize: fetchedComments.page_size
+      });
     } catch (error) {
       console.error("Failed to refresh comments after deletion:", error);
     }
@@ -224,7 +278,12 @@ export default function BlogPostPage() {
 
   return (
     <Container maxWidth="md">
-      <Box sx={{ my: 4 }}>
+      <Box sx={{
+        my: 4,
+        minHeight: 'calc(100vh - 64px - 64px)', // 64px for navbar, 64px for top+bottom margin
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
           <Avatar 
             src={authorProfile?.profile_picture ? 
@@ -340,6 +399,22 @@ export default function BlogPostPage() {
           onCommentDeleted={handleCommentDeleted}
           postId={post.id}
         />
+        {commentPagination.totalPages > 1 && (
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            mt: 2,
+            mb: 4
+          }}>
+            <Pagination 
+              count={commentPagination.totalPages}
+              page={commentPagination.currentPage}
+              onChange={handleCommentPageChange}
+              color="primary"
+              size="medium"
+            />
+          </Box>
+        )}
         <LikesPopup
           open={showLikesPopup}
           onClose={() => setShowLikesPopup(false)}

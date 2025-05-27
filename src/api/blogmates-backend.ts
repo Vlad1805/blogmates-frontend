@@ -85,6 +85,14 @@ export interface CreatePostResponse {
   updated_at: string;
 }
 
+export interface QueryPostResponse {
+  count: number;
+  total_pages: number;
+  current_page: number;
+  page_size: number;
+  results: CreatePostResponse[];
+}
+
 export interface PostCommentRequest {
   content: string;
 }
@@ -96,6 +104,14 @@ export interface PostCommentResponse {
   author_name: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface QueryCommentResponse {
+  count: number;
+  total_pages: number;
+  current_page: number;
+  page_size: number;
+  results: PostCommentResponse[];
 }
 
 export interface LikesResponse {
@@ -325,9 +341,14 @@ export async function createPost(data: CreatePostRequest): Promise<CreatePostRes
 }
 
 // ✨ **Get all posts API**
-export async function getAllPosts(): Promise<CreatePostResponse[]> {
+export async function getAllPosts(page: number = 1, page_size: number = 6): Promise<QueryPostResponse> {
   try {
-    const response = await apiClient.get<CreatePostResponse[]>(ENDPOINTS.GET_ALL_POSTS);
+    const response = await apiClient.get<QueryPostResponse>(ENDPOINTS.GET_ALL_POSTS, {
+      params: {
+        page,
+        page_size
+      }
+    });
     return response.data;
   } catch (error: any) {
     console.error("Get all posts failed:", error);
@@ -357,12 +378,37 @@ export async function deletePostById(id: number): Promise<void> {
 }
 
 // ✨ **Get my posts API**
-export async function getMyPosts(): Promise<CreatePostResponse[]> {
+export async function getMyPosts(page: number = 1, page_size: number = 5): Promise<QueryPostResponse> {
   try {
-    const response = await apiClient.get<CreatePostResponse[]>(ENDPOINTS.GET_MY_POSTS);
+    const response = await apiClient.get<QueryPostResponse>(ENDPOINTS.GET_MY_POSTS, {
+      params: {
+        page,
+        page_size
+      }
+    });
     return response.data;
   } catch (error: any) {
     console.error("Get my posts failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Get user posts API**
+export async function getUserPosts(username: string, page: number = 1, page_size: number = 5): Promise<QueryPostResponse> {
+  try {
+    const response = await apiClient.post<QueryPostResponse>(
+      ENDPOINTS.GET_USER_POSTS,
+      { username }, // send username in the body
+      {
+        params: {
+          page,
+          page_size
+        }
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Get user posts failed:", error);
     throw error;
   }
 }
@@ -389,9 +435,14 @@ export async function deleteComment(comment_id: number, post_id: number): Promis
 }
 
 // ✨ **Get comments API**
-export async function getComments(post_id: number): Promise<PostCommentResponse[]> {
+export async function getComments(post_id: number, page: number = 1, page_size: number = 10): Promise<QueryCommentResponse> {
   try {
-    const response = await apiClient.get<PostCommentResponse[]>(ENDPOINTS.GET_COMMENTS + post_id + "/");
+    const response = await apiClient.get<QueryCommentResponse>(ENDPOINTS.GET_COMMENTS + post_id + "/", {
+      params: {
+        page,
+        page_size
+      }
+    });
     return response.data;
   } catch (error: any) {
     console.error("Get comments failed:", error);

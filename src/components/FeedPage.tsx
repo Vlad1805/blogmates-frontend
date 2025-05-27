@@ -1,6 +1,6 @@
-import { Box, Container, Typography, CircularProgress } from "@mui/material";
+import { Box, Container, Typography, CircularProgress, Pagination } from "@mui/material";
 import { useEffect, useState } from "react";
-import { getAllPosts, CreatePostResponse, getUserProfile, UserDataResponse } from "@/api/blogmates-backend";
+import { getAllPosts, CreatePostResponse, getUserProfile, UserDataResponse, QueryPostResponse } from "@/api/blogmates-backend";
 import { useNavigate } from "react-router-dom";
 import BlogCardComponent from "./BlogCardComponent";
 
@@ -14,39 +14,63 @@ export default function FeedPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedPosts, setExpandedPosts] = useState<Record<number, boolean>>({});
+  const [pagination, setPagination] = useState<{
+    count: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+  }>({
+    count: 0,
+    totalPages: 1,
+    currentPage: 1,
+    pageSize: 10
+  });
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const fetchedPosts = await getAllPosts();
-        setPosts(fetchedPosts);
-        setError(null);
+  const fetchPosts = async (page: number = 1) => {
+    setIsLoading(true);
+    try {
+      const fetchedPosts = await getAllPosts(page);
+      setPosts(fetchedPosts.results);
+      setPagination({
+        count: fetchedPosts.count,
+        totalPages: fetchedPosts.total_pages,
+        currentPage: fetchedPosts.current_page,
+        pageSize: fetchedPosts.page_size
+      });
+      setError(null);
 
-        // Fetch profiles for all authors
-        const profiles: Record<string, UserDataResponse> = {};
-        for (const post of fetchedPosts) {
-          if (!profiles[post.author_name]) {
-            try {
-              if (post.author_name) {
-                const profile = await getUserProfile(post.author_name);
-                profiles[post.author_name] = profile;
-              }
-            } catch (err) {
-              console.error(`Failed to fetch profile for ${post.author_name}:`, err);
+      // Fetch profiles for all authors
+      const profiles: Record<string, UserDataResponse> = {};
+      for (const post of fetchedPosts.results) {
+        if (!profiles[post.author_name]) {
+          try {
+            if (post.author_name) {
+              const profile = await getUserProfile(post.author_name);
+              profiles[post.author_name] = profile;
             }
+          } catch (err) {
+            console.error(`Failed to fetch profile for ${post.author_name}:`, err);
           }
         }
-        setUserProfiles(profiles);
-      } catch (err) {
-        setError((err as any)?.response?.data?.error || "Failed to load posts");
-        console.error("Failed to load posts:", err);
-      } finally {
-        setIsLoading(false);
       }
-    };
+      setUserProfiles(profiles);
+    } catch (err) {
+      setError((err as any)?.response?.data?.error || "Failed to load posts");
+      console.error("Failed to load posts:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPosts();
   }, []);
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    fetchPosts(value);
+    // Scroll to top when changing pages
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleAvatarClick = (username: string) => {
     navigate(`/profile/${username}`);
@@ -74,8 +98,14 @@ export default function FeedPage() {
 
   const handlePostDeleted = async () => {
     try {
-      const fetchedPosts = await getAllPosts();
-      setPosts(fetchedPosts);
+      const fetchedPosts = await getAllPosts(pagination.currentPage);
+      setPosts(fetchedPosts.results);
+      setPagination({
+        count: fetchedPosts.count,
+        totalPages: fetchedPosts.total_pages,
+        currentPage: fetchedPosts.current_page,
+        pageSize: fetchedPosts.page_size
+      });
     } catch (err) {
       console.error("Failed to refresh posts after deletion:", err);
     }
@@ -148,6 +178,24 @@ export default function FeedPage() {
               <Typography color="text.secondary">
                 No posts yet. Be the first to create one!
               </Typography>
+            </Box>
+          )}
+          {pagination.totalPages > 1 && (
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              mt: 4,
+              mb: 2
+            }}>
+              <Pagination 
+                count={pagination.totalPages}
+                page={pagination.currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                size="large"
+                showFirstButton
+                showLastButton
+              />
             </Box>
           )}
         </Box>

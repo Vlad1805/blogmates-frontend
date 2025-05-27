@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Container, Typography, Avatar, Paper, Button } from "@mui/material";
-import { getUserProfile, UserDataResponse, sendFollowRequest, unfollowUser } from "@/api/blogmates-backend";
+import { Box, Container, Typography, Avatar, Paper, Button, CircularProgress, Pagination } from "@mui/material";
+import { getUserProfile, UserDataResponse, sendFollowRequest, unfollowUser, getUserPosts, CreatePostResponse } from "@/api/blogmates-backend";
 import { useAuth } from "@/context/AuthContext";
+import BlogCardComponent from "./BlogCardComponent";
+
+const PREVIEW_CHAR_LIMIT = 300;
+const PREVIEW_LINE_LIMIT = 8;
 
 export default function UserProfilePage() {
   const { username } = useParams<{ username: string }>();
@@ -10,6 +14,38 @@ export default function UserProfilePage() {
   const [userData, setUserData] = useState<UserDataResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // --- Posts state ---
+  const [userPosts, setUserPosts] = useState<CreatePostResponse[]>([]);
+  const [postsPagination, setPostsPagination] = useState({
+    count: 0,
+    totalPages: 1,
+    currentPage: 1,
+    pageSize: 3,
+  });
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [postsError, setPostsError] = useState<string | null>(null);
+
+  // Add preview helpers
+  const isContentLong = (content: string) => {
+    const lines = content.split(/\r?\n/);
+    return content.length > PREVIEW_CHAR_LIMIT || lines.length > PREVIEW_LINE_LIMIT;
+  };
+  const getPreviewContent = (content: string) => {
+    const lines = content.split(/\r?\n/);
+    if (lines.length > PREVIEW_LINE_LIMIT) {
+      return lines.slice(0, PREVIEW_LINE_LIMIT).join("\n") + "...";
+    }
+    if (content.length > PREVIEW_CHAR_LIMIT) {
+      return content.slice(0, PREVIEW_CHAR_LIMIT) + "...";
+    }
+    return content;
+  };
+  const [expandedPosts, setExpandedPosts] = useState<Record<number, boolean>>({});
+  const handleAvatarClick = (username: string) => {};
+  const toggleExpand = (postId: number) => {
+    setExpandedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
+  };
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -27,6 +63,35 @@ export default function UserProfilePage() {
 
     fetchUserProfile();
   }, [username]);
+
+  // --- Fetch user posts ---
+  useEffect(() => {
+    const fetchUserPosts = async () => {
+      if (!username) return;
+      setIsLoadingPosts(true);
+      try {
+        const response = await getUserPosts(username, postsPagination.currentPage, 3);
+        setUserPosts(response.results);
+        setPostsPagination({
+          count: response.count,
+          totalPages: response.total_pages,
+          currentPage: response.current_page,
+          pageSize: 3,
+        });
+        setPostsError(null);
+      } catch (err: any) {
+        setPostsError(err.response?.data?.error || "Failed to load posts");
+      } finally {
+        setIsLoadingPosts(false);
+      }
+    };
+    fetchUserPosts();
+    // eslint-disable-next-line
+  }, [username, postsPagination.currentPage]);
+
+  const handlePostsPageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPostsPagination((prev) => ({ ...prev, currentPage: value }));
+  };
 
   const handleSendFriendRequest = async () => {
     if (!userData) return;
@@ -218,17 +283,53 @@ export default function UserProfilePage() {
       </Box>
 
       {userData && (
-        <Paper elevation={3} sx={{ 
-          p: 4, 
-          borderRadius: 2, 
-          mt: 4,
-          backgroundColor: (theme) => theme.palette.primary.main + '0A',
-          border: (theme) => `1px solid ${theme.palette.primary.main}1A`
-        }}>
-          <Typography variant="h5" gutterBottom>
+        <>
+          <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
             Posts
           </Typography>
-        </Paper>
+          {isLoadingPosts ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : postsError ? (
+            <Typography color="error">{postsError}</Typography>
+          ) : userPosts.length === 0 ? (
+            <Typography color="text.secondary">No posts yet.</Typography>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {userPosts.map((post) => {
+                const expanded = expandedPosts[post.id] || false;
+                const longContent = isContentLong(post.content);
+                const contentToShow = expanded || !longContent ? post.content : getPreviewContent(post.content);
+                return (
+                  <BlogCardComponent
+                    key={post.id}
+                    post={post}
+                    authorProfile={userData}
+                    expanded={expanded}
+                    onAvatarClick={handleAvatarClick}
+                    onToggleExpand={toggleExpand}
+                    isContentLong={longContent}
+                    contentToShow={contentToShow}
+                  />
+                );
+              })}
+              {postsPagination.totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Pagination
+                    count={postsPagination.totalPages}
+                    page={postsPagination.currentPage}
+                    onChange={handlePostsPageChange}
+                    color="primary"
+                    size="large"
+                    showFirstButton
+                    showLastButton
+                  />
+                </Box>
+              )}
+            </Box>
+          )}
+        </>
       )}
     </Container>
   );
