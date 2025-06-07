@@ -28,4 +28,5 @@ export const ENDPOINTS = {
   POST_BLOG_LIKE: "/blog/like/",
   GET_BLOG_LIKES: "/blog/likes/",
   GET_BLOG_LIKES_COUNT: "/blog/like-count/",
+  SEARCH: "/search/",
 };

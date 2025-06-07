@@ -12,6 +12,7 @@ import UserProfilePage from "@/components/UserProfilePage";
 import FeedPage from "@/components/FeedPage";
 import BlogPostPage from "@/components/BlogPostPage";
 import AboutPage from "./components/AboutPage";
+import SearchPage from "./components/SearchPage";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
               <Route path="/profile/:username" element={<UserProfilePage />} />
               <Route path="/feed" element={<FeedPage />} />
               <Route path="/blog/:id" element={<BlogPostPage />} />
+              <Route path="/search" element={<SearchPage />} />
               <Route path="*" element={<div>404 - Page Not Found</div>} />
             </Routes>
           </div>

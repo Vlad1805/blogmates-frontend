@@ -120,6 +120,23 @@ export interface LikesResponse {
   created_at: string;
 }
 
+export interface SearchResponse {
+  users: {
+    count: number;
+    total_pages: number;
+    current_page: number;
+    page_size: number;
+    results: UserDataResponse[];
+  }
+  blog_entries: {
+    count: number;
+    total_pages: number;
+    current_page: number;
+    page_size: number;
+    results: CreatePostResponse[];
+  }
+}
+
 // 🔹 API Client with default settings
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -541,6 +558,25 @@ export async function getBlogLikesCount(post_id: number): Promise<number> {
     return response.data;
   } catch (error: any) {
     console.error("Get blog likes count failed:", error);
+    throw error;
+  }
+}
+
+// ✨ **Search API**
+export async function search(q: string, users_page: number = 1, users_page_size: number = 6, blog_entries_page: number = 1, blog_entries_page_size: number = 1): Promise<SearchResponse> {
+  try {
+    const response = await apiClient.get<SearchResponse>(ENDPOINTS.SEARCH, {
+      params: {
+        q,
+        user_page: users_page,
+        user_page_size: users_page_size,
+        blog_page: blog_entries_page,
+        blog_page_size: blog_entries_page_size
+      }
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Search failed:", error);
     throw error;
   }
 }

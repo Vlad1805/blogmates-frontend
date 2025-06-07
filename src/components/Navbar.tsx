@@ -57,6 +57,9 @@ export default function Navbar() {
             <Button color="inherit" onClick={() => navigate("/feed")}>
               Feed
             </Button>
+            <Button color="inherit" onClick={() => navigate("/search")}>
+              Search
+            </Button>
             {isAuthenticated && (
               <Button color="inherit" onClick={() => navigate("/create")}>
                 Create
