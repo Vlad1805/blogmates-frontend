@@ -184,7 +184,7 @@ export default function BlogPostPage() {
     }
   };
 
-  const handleCommentPageChange = async (event: React.ChangeEvent<unknown>, value: number) => {
+  const handleCommentPageChange = async (_: React.ChangeEvent<unknown>, value: number) => {
     if (!post) return;
     
     try {

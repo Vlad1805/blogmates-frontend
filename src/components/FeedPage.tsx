@@ -1,6 +1,6 @@
 import { Box, Container, Typography, CircularProgress, Pagination } from "@mui/material";
 import { useEffect, useState } from "react";
-import { getAllPosts, CreatePostResponse, getUserProfile, UserDataResponse, QueryPostResponse } from "@/api/blogmates-backend";
+import { getAllPosts, CreatePostResponse, getUserProfile, UserDataResponse } from "@/api/blogmates-backend";
 import { useNavigate } from "react-router-dom";
 import BlogCardComponent from "./BlogCardComponent";
 
@@ -66,7 +66,7 @@ export default function FeedPage() {
     fetchPosts();
   }, []);
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     fetchPosts(value);
     // Scroll to top when changing pages
     window.scrollTo({ top: 0, behavior: 'smooth' });

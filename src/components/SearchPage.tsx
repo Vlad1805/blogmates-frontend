@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Container, Typography, TextField, Button, CircularProgress, Pagination, Paper, List, ListItemText, ListItemButton, Avatar, ListItemAvatar } from "@mui/material";
+import { Box, Container, Typography, TextField, Button, CircularProgress, Pagination, List, ListItemText, ListItemButton, Avatar, ListItemAvatar } from "@mui/material";
 import { search, SearchResponse, CreatePostResponse } from "@/api/blogmates-backend";
 import { useNavigate } from "react-router-dom";
 import BlogResultComponent from "./BlogResultComponent";

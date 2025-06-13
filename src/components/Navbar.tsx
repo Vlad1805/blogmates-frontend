@@ -16,7 +16,7 @@ import MobileMenu from "./MobileMenu";
 import { useState } from "react";
 
 export default function Navbar() {
-  const { userData, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

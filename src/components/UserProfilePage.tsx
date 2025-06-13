@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Box, Container, Typography, Avatar, Paper, Button, CircularProgress, Pagination } from "@mui/material";
 import { getUserProfile, UserDataResponse, sendFollowRequest, unfollowUser, getUserPosts, CreatePostResponse } from "@/api/blogmates-backend";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +9,7 @@ const PREVIEW_CHAR_LIMIT = 300;
 const PREVIEW_LINE_LIMIT = 8;
 
 export default function UserProfilePage() {
+  const navigate = useNavigate();
   const { username } = useParams<{ username: string }>();
   const { userData: currentUser } = useAuth();
   const [userData, setUserData] = useState<UserDataResponse | null>(null);
@@ -42,7 +43,9 @@ export default function UserProfilePage() {
     return content;
   };
   const [expandedPosts, setExpandedPosts] = useState<Record<number, boolean>>({});
-  const handleAvatarClick = (username: string) => {};
+  const handleAvatarClick = (username: string) => {
+    navigate(`/profile/${username}`);
+  };
   const toggleExpand = (postId: number) => {
     setExpandedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
@@ -89,7 +92,7 @@ export default function UserProfilePage() {
     // eslint-disable-next-line
   }, [username, postsPagination.currentPage]);
 
-  const handlePostsPageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+  const handlePostsPageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setPostsPagination((prev) => ({ ...prev, currentPage: value }));
   };
 
