@@ -20,10 +20,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Attempt to refresh the token
         await refreshToken();
-        // If refresh succeeds, we're authenticated
         setIsAuthenticated(true);
       } catch (error) {
-        // If refresh fails, we're not authenticated
         setIsAuthenticated(false);
         setUserData(null);
       }
@@ -56,7 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook to use authentication state
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within an AuthProvider");

@@ -68,7 +68,6 @@ export default function FeedPage() {
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     fetchPosts(value);
-    // Scroll to top when changing pages
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

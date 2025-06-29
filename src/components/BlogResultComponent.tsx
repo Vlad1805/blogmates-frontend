@@ -23,7 +23,7 @@ export default function BlogResultComponent({ post, onClick }: BlogResultCompone
         const profile = await getUserProfile(post.author_name);
         if (isMounted) setAuthorProfile(profile);
       } catch (err) {
-        // Optionally handle error
+        console.error(`Failed to fetch profile for ${post.author_name}:`, err);
       }
     }
     fetchProfile();

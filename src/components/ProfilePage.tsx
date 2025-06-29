@@ -8,9 +8,6 @@ import { useNavigate } from "react-router-dom";
 import PendingRequestsList from "./PendingRequestsList";
 import { UserDataResponse } from "@/api/blogmates-backend";
 
-interface SenderProfile extends UserDataResponse {
-  // Add any additional properties if needed
-}
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -21,9 +18,9 @@ export default function ProfilePage() {
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [followers, setFollowers] = useState<FollowData[]>([]);
   const [following, setFollowing] = useState<FollowData[]>([]);
-  const [senderProfiles, setSenderProfiles] = useState<Record<number, SenderProfile>>({});
-  const [followerProfiles, setFollowerProfiles] = useState<Record<number, SenderProfile>>({});
-  const [followingProfiles, setFollowingProfiles] = useState<Record<number, SenderProfile>>({});
+  const [senderProfiles, setSenderProfiles] = useState<Record<number, UserDataResponse>>({});
+  const [followerProfiles, setFollowerProfiles] = useState<Record<number, UserDataResponse>>({});
+  const [followingProfiles, setFollowingProfiles] = useState<Record<number, UserDataResponse>>({});
   const [formData, setFormData] = useState({
     username: userData?.username || '',
     first_name: userData?.first_name || '',
@@ -31,7 +28,6 @@ export default function ProfilePage() {
     biography: userData?.biography || '',
   });
 
-  // Update form data when userData changes
   useEffect(() => {
     if (userData) {
       setFormData({
@@ -58,8 +54,7 @@ export default function ProfilePage() {
         const following = await getFollowing();
         setFollowing(following);
         
-        // Fetch sender profiles for each request
-        const profiles: Record<number, SenderProfile> = {};
+        const profiles: Record<number, UserDataResponse> = {};
         for (const request of requests) {
           try {
             const profile = await getUserProfileById(request.sender_id);
@@ -70,7 +65,7 @@ export default function ProfilePage() {
         }
         setSenderProfiles(profiles);
 
-        const followersProfiles: Record<number, SenderProfile> = {};
+        const followersProfiles: Record<number, UserDataResponse> = {};
         for (const follower of followers) {
           try {
             const profile = await getUserProfileById(follower.id);
@@ -81,7 +76,7 @@ export default function ProfilePage() {
         }
         setFollowerProfiles(followersProfiles);
 
-        const followingProfiles: Record<number, SenderProfile> = {};
+        const followingProfiles: Record<number, UserDataResponse> = {};
         for (const f of following) {
           try {
             const profile = await getUserProfileById(f.id);
@@ -111,7 +106,6 @@ export default function ProfilePage() {
     setIsUpdating(true);
     setError(null);
     try {
-      // Remove empty fields from formData
       const updateData = Object.fromEntries(
         Object.entries(formData).filter(([_, value]) => value.trim() !== '')
       );
@@ -121,7 +115,6 @@ export default function ProfilePage() {
         reader.readAsDataURL(selectedImage);
         reader.onloadend = async () => {
           const base64String = reader.result as string;
-          // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
           const base64Data = base64String.split(',')[1];
           updateData.profile_picture = base64Data;
           updateData.profile_picture_content_type = selectedImage.type;
@@ -150,7 +143,6 @@ export default function ProfilePage() {
   const handleSendFriendRequest = async (senderId: number) => {
     try {
       await sendFollowRequest(senderId);
-      // Refresh sender profiles
       const updatedProfile = await getUserProfileById(senderId);
       setSenderProfiles(prev => ({
         ...prev,
@@ -164,22 +156,18 @@ export default function ProfilePage() {
   const handleAcceptFollowRequest = async (requestId: number) => {
     try {
       await acceptFollowRequest(requestId);
-      // Find the sender ID from the request
       const request = pendingRequests.find(r => r.id === requestId);
       if (request) {
-        // Refresh sender profile
         const updatedProfile = await getUserProfileById(request.sender_id);
         setSenderProfiles(prev => ({
           ...prev,
           [request.sender_id]: updatedProfile
         }));
 
-        // Refresh followers list
         const updatedFollowers = await getFollowers();
         setFollowers(updatedFollowers);
 
-        // Fetch profiles for new followers
-        const followersProfiles: Record<number, SenderProfile> = {};
+        const followersProfiles: Record<number, UserDataResponse> = {};
         for (const follower of updatedFollowers) {
           try {
             const profile = await getUserProfileById(follower.id);
@@ -190,7 +178,6 @@ export default function ProfilePage() {
         }
         setFollowerProfiles(followersProfiles);
 
-        // Remove the request from pending requests
         setPendingRequests(prev => prev.filter(r => r.id !== requestId));
       }
     } catch (err) {
@@ -201,17 +188,14 @@ export default function ProfilePage() {
   const handleDeclineFollowRequest = async (requestId: number) => {
     try {
       await declineFollowRequest(requestId);
-      // Find the sender ID from the request
       const request = pendingRequests.find(r => r.id === requestId);
       if (request) {
-        // Refresh sender profile
         const updatedProfile = await getUserProfileById(request.sender_id);
         setSenderProfiles(prev => ({
           ...prev,
           [request.sender_id]: updatedProfile
         }));
 
-        // Remove the request from pending requests
         setPendingRequests(prev => prev.filter(r => r.id !== requestId));
       }
     } catch (err) {
@@ -221,15 +205,15 @@ export default function ProfilePage() {
 
   return (
     <Container maxWidth="md" sx={{ 
-      height: 'calc(100vh - 64px)', // Subtract navbar height
+      height: 'calc(100vh - 64px)',
       overflowY: 'auto',
       paddingTop: '16px',
       paddingBottom: '16px',
       '&::-webkit-scrollbar': {
         display: 'none'
       },
-      scrollbarWidth: 'none', // Firefox
-      msOverflowStyle: 'none' // IE and Edge
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none'
     }}>
       <Box sx={{ my: 4 }}>
         {error && (

@@ -16,7 +16,6 @@ export default function UserProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- Posts state ---
   const [userPosts, setUserPosts] = useState<CreatePostResponse[]>([]);
   const [postsPagination, setPostsPagination] = useState({
     count: 0,
@@ -27,7 +26,6 @@ export default function UserProfilePage() {
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [postsError, setPostsError] = useState<string | null>(null);
 
-  // Add preview helpers
   const isContentLong = (content: string) => {
     const lines = content.split(/\r?\n/);
     return content.length > PREVIEW_CHAR_LIMIT || lines.length > PREVIEW_LINE_LIMIT;
@@ -67,7 +65,6 @@ export default function UserProfilePage() {
     fetchUserProfile();
   }, [username]);
 
-  // --- Fetch user posts ---
   useEffect(() => {
     const fetchUserPosts = async () => {
       if (!username) return;
@@ -102,7 +99,6 @@ export default function UserProfilePage() {
     setIsLoading(true);
     try {
       await sendFollowRequest(userData.id);
-      // Refetch user data to update the UI
       const updatedData = await getUserProfile(username!);
       setUserData(updatedData);
     } catch (err) {
@@ -118,7 +114,6 @@ export default function UserProfilePage() {
     setIsLoading(true);
     try {
       await unfollowUser(userData.id);
-      // Refetch user data to update the UI
       const updatedData = await getUserProfile(username!);
       setUserData(updatedData);
     } catch (err) {

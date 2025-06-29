@@ -2,7 +2,6 @@ import axios from "axios";
 import { API_BASE_URL, ENDPOINTS } from "@/config";
 
 
-// 🔹 Interfaces for API requests & responses
 export interface SignUpRequest {
   username: string;
   email: string;
@@ -137,24 +136,20 @@ export interface SearchResponse {
   }
 }
 
-// 🔹 API Client with default settings
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
   timeout: 5000,
-  withCredentials: true, // Important for sending cookies
+  withCredentials: true,
 });
 
-// 🔄 Interceptor for Refreshing Tokens
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     
-    // Only handle 401 errors and if we haven't retried this request
-    // Also check if this is not a refresh token request to prevent infinite loops
     if (error.response?.status === 401 && 
         originalRequest && 
         !originalRequest._retry && 
@@ -178,13 +173,11 @@ apiClient.interceptors.response.use(
   }
 );
 
-// ✨ **Sign Up API**
 export async function signUpApi(data: SignUpRequest): Promise<SignUpResponse> {
   const response = await apiClient.post<SignUpResponse>(ENDPOINTS.SIGN_UP, data);
   return response.data;
 }
 
-// ✨ **Login API**
 export async function loginUser(data: LoginRequest): Promise<LoginResponse> {
   try {
     const response = await apiClient.post<LoginResponse>(ENDPOINTS.LOGIN, data);
@@ -195,7 +188,6 @@ export async function loginUser(data: LoginRequest): Promise<LoginResponse> {
   }
 }
 
-// ✨ **Logout API**
 export async function logoutUser(): Promise<LogoutResponse> {
   try {
     const response = await apiClient.post<LogoutResponse>(ENDPOINTS.LOGOUT);
@@ -206,7 +198,6 @@ export async function logoutUser(): Promise<LogoutResponse> {
   }
 }
 
-// ✨ **Get User Data API**
 export async function getUserData(): Promise<UserDataResponse> {
   try {
     const response = await apiClient.get<UserDataResponse>(ENDPOINTS.USER_DATA);
@@ -217,7 +208,6 @@ export async function getUserData(): Promise<UserDataResponse> {
   }
 }
 
-// ✨ **Get User Profile API**
 export async function getUserProfile(username: string): Promise<UserDataResponse> {
   try {
     const response = await apiClient.post<UserDataResponse>(ENDPOINTS.USER_PROFILE, { username: username });
@@ -228,7 +218,6 @@ export async function getUserProfile(username: string): Promise<UserDataResponse
   }
 }
 
-// ✨ **Get User Profile API by ID**
 export async function getUserProfileById(id: number): Promise<UserDataResponse> {
   try {
     const response = await apiClient.get<UserDataResponse>(ENDPOINTS.USER_PROFILE, {
@@ -241,7 +230,6 @@ export async function getUserProfileById(id: number): Promise<UserDataResponse> 
   }
 }
 
-// ✨ **Update User Profile API**
 export async function updateUserProfile(data: UpdateProfileRequest): Promise<UserDataResponse> {
   try {
     const response = await apiClient.patch<UserDataResponse>(ENDPOINTS.USER_PROFILE, data);
@@ -252,7 +240,6 @@ export async function updateUserProfile(data: UpdateProfileRequest): Promise<Use
   }
 }
 
-// ✨ **Refresh Token API**
 export async function refreshToken(): Promise<void> {
   try {
     await apiClient.post(ENDPOINTS.REFRESH_TOKEN, {}, { withCredentials: true });
@@ -262,7 +249,6 @@ export async function refreshToken(): Promise<void> {
   }
 }
 
-// ✨ **Send follow request API**
 export async function sendFollowRequest(id: number): Promise<void> {
   try {
     await apiClient.post(ENDPOINTS.SEND_FOLLOW_REQUEST, {
@@ -274,7 +260,6 @@ export async function sendFollowRequest(id: number): Promise<void> {
   }
 }
 
-// ✨ **Get pending friend requests API**
 export async function getPendingFriendRequests(): Promise<PendingRequest[]> {
   try {
     const response = await apiClient.get<PendingRequest[]>(ENDPOINTS.PENDING_FOLLOW_REQUESTS);
@@ -285,7 +270,6 @@ export async function getPendingFriendRequests(): Promise<PendingRequest[]> {
   }
 }
 
-// ✨ **Get pending sent friend requests API**
 export async function getPendingSentFriendRequests(): Promise<PendingRequest[]> {
   try {
     const response = await apiClient.get<PendingRequest[]>(ENDPOINTS.PENDING_SENT_FOLLOW_REQUESTS);
@@ -296,7 +280,6 @@ export async function getPendingSentFriendRequests(): Promise<PendingRequest[]> 
   }
 }
 
-// ✨ **Accept follow request API**
 export async function acceptFollowRequest(id: number): Promise<void> {
   try {
     await apiClient.post(ENDPOINTS.ACCEPT_FOLLOW_REQUEST + id + "/");
@@ -306,7 +289,6 @@ export async function acceptFollowRequest(id: number): Promise<void> {
   }
 }
 
-// ✨ **Decline follow request API**
 export async function declineFollowRequest(id: number): Promise<void> {
   try {
     await apiClient.delete(ENDPOINTS.REMOVE_FOLLOW_REQUEST + id + "/");
@@ -316,7 +298,6 @@ export async function declineFollowRequest(id: number): Promise<void> {
   }
 }
 
-// Unfollow user API
 export async function unfollowUser(id: number): Promise<void> {
   try {
     await apiClient.delete(ENDPOINTS.UNFOLLOW_USER + id + "/");
@@ -346,7 +327,6 @@ export async function getFollowing(): Promise<FollowData[]> {
   }
 }
 
-// ✨ **Create Post API**
 export async function createPost(data: CreatePostRequest): Promise<CreatePostResponse> {
   try {
     const response = await apiClient.post<CreatePostResponse>(ENDPOINTS.CREATE_POST, data);
@@ -357,7 +337,6 @@ export async function createPost(data: CreatePostRequest): Promise<CreatePostRes
   }
 }
 
-// ✨ **Get all posts API**
 export async function getAllPosts(page: number = 1, page_size: number = 6): Promise<QueryPostResponse> {
   try {
     const response = await apiClient.get<QueryPostResponse>(ENDPOINTS.GET_ALL_POSTS, {
@@ -373,7 +352,6 @@ export async function getAllPosts(page: number = 1, page_size: number = 6): Prom
   }
 }
 
-// ✨ **Get post by id API**
 export async function getPostById(id: number): Promise<CreatePostResponse> {
   try {
     const response = await apiClient.get<CreatePostResponse>(ENDPOINTS.GET_POST_BY_ID + id + "/");
@@ -384,7 +362,6 @@ export async function getPostById(id: number): Promise<CreatePostResponse> {
   }
 }
 
-// ✨ **Delete post by id API**
 export async function deletePostById(id: number): Promise<void> {
   try {
     await apiClient.delete(ENDPOINTS.GET_POST_BY_ID + id + "/");
@@ -394,7 +371,6 @@ export async function deletePostById(id: number): Promise<void> {
   }
 }
 
-// ✨ **Get my posts API**
 export async function getMyPosts(page: number = 1, page_size: number = 5): Promise<QueryPostResponse> {
   try {
     const response = await apiClient.get<QueryPostResponse>(ENDPOINTS.GET_MY_POSTS, {
@@ -410,7 +386,6 @@ export async function getMyPosts(page: number = 1, page_size: number = 5): Promi
   }
 }
 
-// ✨ **Get user posts API**
 export async function getUserPosts(username: string, page: number = 1, page_size: number = 5): Promise<QueryPostResponse> {
   try {
     const response = await apiClient.post<QueryPostResponse>(
@@ -430,7 +405,6 @@ export async function getUserPosts(username: string, page: number = 1, page_size
   }
 }
 
-// ✨ **Post comment API**
 export async function postComment(post_id: number, data: PostCommentRequest): Promise<PostCommentResponse> {
   try {
     const response = await apiClient.post<PostCommentResponse>(ENDPOINTS.POST_COMMENT + post_id + "/", data);
@@ -441,7 +415,6 @@ export async function postComment(post_id: number, data: PostCommentRequest): Pr
   }
 }
 
-// ✨ **Delete comment API**
 export async function deleteComment(comment_id: number, post_id: number): Promise<void> {
   try {
     await apiClient.delete(ENDPOINTS.POST_COMMENT + post_id + "/" + comment_id + "/");
@@ -451,7 +424,6 @@ export async function deleteComment(comment_id: number, post_id: number): Promis
   }
 }
 
-// ✨ **Get comments API**
 export async function getComments(post_id: number, page: number = 1, page_size: number = 10): Promise<QueryCommentResponse> {
   try {
     const response = await apiClient.get<QueryCommentResponse>(ENDPOINTS.GET_COMMENTS + post_id + "/", {
@@ -467,7 +439,6 @@ export async function getComments(post_id: number, page: number = 1, page_size: 
   }
 }
 
-// ✨ **Get comments count API**
 export async function getCommentsCount(post_id: number): Promise<{ comment_count: number }> {
   try {
     const response = await apiClient.get<{ comment_count: number }>(ENDPOINTS.GET_COMMENTS_COUNT + post_id + "/");
@@ -478,7 +449,6 @@ export async function getCommentsCount(post_id: number): Promise<{ comment_count
   }
 }
 
-// ✨ **Post like comment API**
 export async function postLikeComment(comment_id: number): Promise<void> {
   try {
     await apiClient.post(ENDPOINTS.POST_LIKE_COMMENT + comment_id + "/");
@@ -488,7 +458,6 @@ export async function postLikeComment(comment_id: number): Promise<void> {
   }
 }
 
-// ✨ **Delete like comment API**
 export async function deleteLikeComment(comment_id: number): Promise<void> {
   try {
     await apiClient.delete(ENDPOINTS.POST_LIKE_COMMENT + comment_id + "/");
@@ -498,7 +467,6 @@ export async function deleteLikeComment(comment_id: number): Promise<void> {
   }
 }
 
-// ✨ **Get comment likes API**
 export async function getCommentLikes(comment_id: number): Promise<LikesResponse[]> {
   try {
     const response = await apiClient.get<LikesResponse[]>(ENDPOINTS.GET_COMMENT_LIKES + comment_id + "/");
@@ -509,7 +477,6 @@ export async function getCommentLikes(comment_id: number): Promise<LikesResponse
   }
 }
 
-// ✨ **Get comment likes count API**
 export async function getCommentLikesCount(comment_id: number): Promise<number> {
   try {
     const response = await apiClient.get<number>(ENDPOINTS.GET_COMMENT_LIKES_COUNT + comment_id + "/");
@@ -520,7 +487,6 @@ export async function getCommentLikesCount(comment_id: number): Promise<number> 
   }
 }
 
-// ✨ **Post blog like API**
 export async function postBlogLike(post_id: number): Promise<void> {
   try {
     await apiClient.post(ENDPOINTS.POST_BLOG_LIKE + post_id + "/");
@@ -530,7 +496,6 @@ export async function postBlogLike(post_id: number): Promise<void> {
   }
 }
 
-// ✨ **Delete blog like API**
 export async function deleteBlogLike(post_id: number): Promise<void> {
   try {
     await apiClient.delete(ENDPOINTS.POST_BLOG_LIKE + post_id + "/");
@@ -540,7 +505,6 @@ export async function deleteBlogLike(post_id: number): Promise<void> {
   }
 }
 
-// ✨ **Get blog likes API**
 export async function getBlogLikes(post_id: number): Promise<LikesResponse[]> {
   try {
     const response = await apiClient.get<LikesResponse[]>(ENDPOINTS.GET_BLOG_LIKES + post_id + "/");
@@ -551,7 +515,6 @@ export async function getBlogLikes(post_id: number): Promise<LikesResponse[]> {
   }
 }
 
-// ✨ **Get blog likes count API**
 export async function getBlogLikesCount(post_id: number): Promise<number> {
   try {
     const response = await apiClient.get<number>(ENDPOINTS.GET_BLOG_LIKES_COUNT + post_id + "/");
@@ -562,7 +525,6 @@ export async function getBlogLikesCount(post_id: number): Promise<number> {
   }
 }
 
-// ✨ **Search API**
 export async function search(q: string, users_page: number = 1, users_page_size: number = 6, blog_entries_page: number = 1, blog_entries_page_size: number = 1): Promise<SearchResponse> {
   try {
     const response = await apiClient.get<SearchResponse>(ENDPOINTS.SEARCH, {

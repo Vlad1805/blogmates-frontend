@@ -280,7 +280,7 @@ export default function BlogPostPage() {
     <Container maxWidth="md">
       <Box sx={{
         my: 4,
-        minHeight: 'calc(100vh - 64px - 64px)', // 64px for navbar, 64px for top+bottom margin
+        minHeight: 'calc(100vh - 64px - 64px)',
         display: 'flex',
         flexDirection: 'column',
       }}>

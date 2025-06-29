@@ -28,11 +28,10 @@ export default function CreatePostPage() {
         content: content.trim(),
         visibility
       });
-      navigate("/feed"); // Redirect to feed after successful creation
+      navigate("/feed");
     } catch (err: any) {
       console.log('Full error:', err);
       
-      // Extract error message from the server response
       const errorMessage = err.response?.data?.error || 
                           err.response?.data?.message || 
                           err.message || 

@@ -17,7 +17,7 @@ export default function LandingPage() {
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        color: "#ffffff", // Optional, if image is dark
+        color: "#ffffff",
         paddingX: 2,
       }}
     >
@@ -28,7 +28,7 @@ export default function LandingPage() {
         sx={{
           color: "#B22222",
           fontFamily: "'Courier Prime', monospace",
-          fontSize: "2rem", // Adjust size as you like
+          fontSize: "2rem",
         }}
       >
         <Typewriter
@@ -38,10 +38,10 @@ export default function LandingPage() {
             "Write Freely.",
             "Publish Confidently.",
           ]}
-          loop={0} // Infinite loop
+          loop={0}
           typeSpeed={70}
           deleteSpeed={40}
-          delaySpeed={1500} // Pause after typing
+          delaySpeed={1500}
         />
       </Typography>
     </Box>

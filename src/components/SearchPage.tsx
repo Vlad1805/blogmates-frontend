@@ -20,7 +20,7 @@ export default function SearchPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await search(query, usersPageNum, PAGE_SIZE_USERS, postsPageNum, PAGE_SIZE_POSTS); // We'll use the same page for both, backend should support separate if needed
+      const res = await search(query, usersPageNum, PAGE_SIZE_USERS, postsPageNum, PAGE_SIZE_POSTS);
       setResults(res);
     } catch (err: any) {
       setError(err.response?.data?.error || "Search failed");
@@ -91,7 +91,6 @@ export default function SearchPage() {
                   : 'flex-start',
             }}
           >
-            {/* Posts Section (left) */}
             {results.blog_entries?.results?.length > 0 && (
               <Box sx={{ flex: 2, minWidth: 0, maxWidth: results.users?.results?.length ? undefined : 700 }}>
                 <Typography variant="h5" sx={{ mb: 2 }}>Posts</Typography>
@@ -119,7 +118,6 @@ export default function SearchPage() {
               </Box>
             )}
 
-            {/* Users Section (right) */}
             {results.users?.results?.length > 0 && (
               <Box sx={{ flex: 1, minWidth: 0, maxWidth: results.blog_entries?.results?.length ? undefined : 400 }}>
                 <Typography variant="h5" sx={{ mb: 2 }}>Users</Typography>
